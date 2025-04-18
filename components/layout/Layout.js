@@ -27,9 +27,11 @@ const Layout = ({ children }) => {
                   Home
                 </button>
               </Link>
-              <button className="bg-[#334155] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-[#475569] transition-all duration-200 shadow-sm hover:shadow-md">
-                Register New Image
-              </button>
+              <Link href="/submit">
+                <button className="bg-[#334155] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-[#475569] transition-all duration-200 shadow-sm hover:shadow-md">
+                  Register New Image
+                </button>
+              </Link>
               <Link href="/about">
                 <button className="bg-[#334155] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-[#475569] transition-all duration-200 shadow-sm hover:shadow-md">
                   About
