@@ -34,7 +34,7 @@ export default function About() {
             <div className="bg-[#1E293B] p-6 rounded-lg">
               <h3 className="text-xl font-semibold mb-3 text-white">Step 2: A Unique Image ID Is Generated</h3>
               <p className="text-[#F1F5F9]">
-                ZorAi automatically (or manually) generates a unique ID using a secure hashing algorithm. This ID is derived from factors like the prompt, timestamp, and AI model used — making it a reliable fingerprint of the image's origin.
+                ZorAi automatically (or manually) generates a unique ID using a secure hashing algorithm. This ID is derived from factors like the prompt, timestamp, and AI model used — making it a reliable fingerprint of the image&apos;s origin.
               </p>
             </div>
 
