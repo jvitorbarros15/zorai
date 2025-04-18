@@ -3,74 +3,71 @@ import Layout from '../components/layout/Layout';
 export default function About() {
   return (
     <Layout>
-      <div className="max-w-3xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-center">About ZorAi</h1>
-        
-        <div className="space-y-8">
-          {/* Project Description */}
-          <section className="bg-[#1E293B] p-6 rounded-lg border border-[#334155]">
-            <h2 className="text-xl font-semibold mb-4 text-[#00F5D4]">What is ZorAi?</h2>
-            <p className="text-[#F1F5F9] mb-4">
-              ZorAi is a decentralized application that verifies and registers AI-generated image IDs on the blockchain. 
-              Our platform provides a secure and transparent way to track and verify the origin of AI-generated content.
+      <div className="max-w-4xl mx-auto">
+        {/* What is ZorAi Section */}
+        <section className="mb-12">
+          <h1 className="text-3xl font-bold mb-6 text-[#00F5D4]">What is ZorAi?</h1>
+          <div className="space-y-6 text-[#F1F5F9]">
+            <p>
+              ZorAi is a decentralized application designed to verify and register AI-generated image IDs on the blockchain. Our platform brings transparency, traceability, and trust to the world of generative AI by allowing anyone to check whether a visual asset was created by artificial intelligence, and if so, when, how, and by whom.
             </p>
-            <p className="text-[#F1F5F9]">
-              By leveraging blockchain technology, we ensure that each AI-generated image can be traced back to its source 
-              and verified for authenticity, helping to combat misinformation and establish trust in AI-generated content.
+            <p>
+              In a digital era where misinformation spreads fast and AI-generated visuals are increasingly indistinguishable from real ones, ZorAi serves as a trust layer, enabling creators, platforms, and users to authenticate the origin of AI-generated content through a public, immutable record.
             </p>
-          </section>
-
-          {/* How It Works */}
-          <section className="bg-[#1E293B] p-6 rounded-lg border border-[#334155]">
-            <h2 className="text-xl font-semibold mb-4 text-[#00F5D4]">How It Works</h2>
-            <ol className="list-decimal list-inside space-y-4 text-[#F1F5F9]">
-              <li>Users submit AI-generated images with their unique IDs</li>
-              <li>The system verifies the image's origin and AI model used</li>
-              <li>Verified information is stored on the blockchain</li>
-              <li>Anyone can verify the authenticity of an image using its ID</li>
-            </ol>
-          </section>
-
-          {/* Connect Wallet Section */}
-          <section className="bg-[#1E293B] p-6 rounded-lg border border-[#334155]">
-            <h2 className="text-xl font-semibold mb-4 text-[#00F5D4]">Get Started</h2>
-            <p className="text-[#F1F5F9] mb-4">
-              Connect your MetaMask wallet to start verifying and registering AI-generated images.
+            <p>
+              ZorAi is built for developers, creators, journalists, and platforms who believe in the importance of accountability and digital integrity in the age of artificial intelligence.
             </p>
-            <button
-              className="px-6 py-3 bg-[#00F5D4] text-[#0F172A] font-semibold rounded-lg hover:bg-opacity-90 transition-colors"
-              onClick={() => {
-                // TODO: Implement MetaMask connection
-                console.log('Connect wallet clicked');
-              }}
-            >
-              Connect Wallet
-            </button>
-          </section>
+          </div>
+        </section>
 
-          {/* Links */}
-          <section className="bg-[#1E293B] p-6 rounded-lg border border-[#334155]">
-            <h2 className="text-xl font-semibold mb-4 text-[#00F5D4]">Links</h2>
-            <div className="space-y-2">
-              <a
-                href="https://github.com/yourusername/zorai"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block text-[#00F5D4] hover:text-opacity-80 transition-colors"
-              >
-                GitHub Repository
-              </a>
-              <a
-                href="https://etherscan.io/address/your-contract-address"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block text-[#00F5D4] hover:text-opacity-80 transition-colors"
-              >
-                Smart Contract
-              </a>
+        {/* How It Works Section */}
+        <section>
+          <h2 className="text-2xl font-bold mb-8 text-[#00F5D4]">How It Works</h2>
+          <div className="space-y-8">
+            <div className="bg-[#1E293B] p-6 rounded-lg">
+              <h3 className="text-xl font-semibold mb-3 text-white">Step 1: Image Is Created by AI</h3>
+              <p className="text-[#F1F5F9]">
+                An image is generated using an AI tool (e.g., DALL·E, Midjourney, etc.), either directly through ZorAi or another platform.
+              </p>
             </div>
-          </section>
-        </div>
+
+            <div className="bg-[#1E293B] p-6 rounded-lg">
+              <h3 className="text-xl font-semibold mb-3 text-white">Step 2: A Unique Image ID Is Generated</h3>
+              <p className="text-[#F1F5F9]">
+                ZorAi automatically (or manually) generates a unique ID using a secure hashing algorithm. This ID is derived from factors like the prompt, timestamp, and AI model used — making it a reliable fingerprint of the image's origin.
+              </p>
+            </div>
+
+            <div className="bg-[#1E293B] p-6 rounded-lg">
+              <h3 className="text-xl font-semibold mb-3 text-white">Step 3: Content Risk Filter (Optional)</h3>
+              <p className="text-[#F1F5F9]">
+                Before registering the ID, ZorAi can run the prompt or image through a risk filter (e.g., via OpenAI moderation API or image classifiers) to detect potential for misinformation or sensitive content.
+              </p>
+              <p className="text-[#F1F5F9] mt-3">
+                Only images with potential impact (e.g., impersonation, political content, news-related visuals) may be logged on-chain.
+              </p>
+            </div>
+
+            <div className="bg-[#1E293B] p-6 rounded-lg">
+              <h3 className="text-xl font-semibold mb-3 text-white">Step 4: ID Is Registered on the Blockchain</h3>
+              <p className="text-[#F1F5F9]">
+                If the image passes the filter, its unique ID is stored on the blockchain via a smart contract. This ensures:
+              </p>
+              <ul className="list-disc list-inside mt-3 text-[#F1F5F9] space-y-1 ml-4">
+                <li>Permanent record</li>
+                <li>Public visibility</li>
+                <li>Proof of provenance</li>
+              </ul>
+            </div>
+
+            <div className="bg-[#1E293B] p-6 rounded-lg">
+              <h3 className="text-xl font-semibold mb-3 text-white">Step 5: Anyone Can Verify It</h3>
+              <p className="text-[#F1F5F9]">
+                Users can input an image ID on the ZorAi platform to check whether it has been registered, when it was created, and which model generated it — all from a trustless, decentralized source.
+              </p>
+            </div>
+          </div>
+        </section>
       </div>
     </Layout>
   );

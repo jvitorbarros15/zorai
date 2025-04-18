@@ -23,21 +23,19 @@ const Layout = ({ children }) => {
             {/* Navigation */}
             <div className="flex items-center gap-4">
               <Link href="/">
-                <button className="bg-[#1E293B] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-[#2D3B4F] transition-all duration-200 shadow-sm hover:shadow-md">
+                <button className="bg-[#334155] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-[#475569] transition-all duration-200 shadow-sm hover:shadow-md">
                   Home
                 </button>
               </Link>
-              <Link href="/submit">
-                <button className="bg-[#1E293B] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-[#2D3B4F] transition-all duration-200 shadow-sm hover:shadow-md">
-                  Submit
-                </button>
-              </Link>
+              <button className="bg-[#334155] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-[#475569] transition-all duration-200 shadow-sm hover:shadow-md">
+                Register New Image
+              </button>
               <Link href="/about">
-                <button className="bg-[#1E293B] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-[#2D3B4F] transition-all duration-200 shadow-sm hover:shadow-md">
+                <button className="bg-[#334155] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-[#475569] transition-all duration-200 shadow-sm hover:shadow-md">
                   About
                 </button>
               </Link>
-              <button className="bg-[#00F5D4] text-[#0F172A] px-6 py-2.5 rounded-lg font-medium hover:bg-[#00E6C2] transition-all duration-200 shadow-sm hover:shadow-md">
+              <button className="bg-gradient-to-r from-[#00F5D4] to-[#00D4F5] text-[#0F172A] px-6 py-2.5 rounded-lg font-medium hover:opacity-90 transition-all duration-200 shadow-sm hover:shadow-md">
                 Connect Wallet
               </button>
             </div>
@@ -64,7 +62,7 @@ const Layout = ({ children }) => {
               <h3 className="text-lg font-semibold mb-4">Connect</h3>
               <div className="space-y-2">
                 <a
-                  href="https://github.com/yourusername/zorai"
+                  href="https://github.com/jvitorbarros15/zorai"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block text-sm text-[#94A3B8] hover:text-[#00F5D4]"
@@ -83,7 +81,7 @@ const Layout = ({ children }) => {
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-[#1E293B] text-center text-sm text-[#94A3B8]">
-            <p>© 2024 ZorAi. All rights reserved.</p>
+            <p>© 2025 ZorAi. All rights reserved.</p>
           </div>
         </div>
       </footer>

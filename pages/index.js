@@ -82,25 +82,17 @@ export default function Home() {
 
         {/* CTA Section */}
         <div className="mt-12 text-center">
-          <a
-            href="/submit"
-            className="inline-flex items-center px-6 py-3 bg-[#00F5D4] text-[#0F172A] font-semibold rounded-xl hover:bg-opacity-90 transition-colors space-x-2"
-          >
+          <button className="bg-gradient-to-r from-[#00F5D4] to-[#00D4F5] text-[#0F172A] px-6 py-2.5 rounded-lg font-medium hover:shadow-lg hover:scale-105 transition-all duration-200 flex items-center gap-2 group inline-flex">
             <span>Register New Image</span>
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              className="h-5 w-5 transform group-hover:rotate-90 transition-transform duration-200" 
+              viewBox="0 0 20 20" 
+              fill="currentColor"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
+              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
             </svg>
-          </a>
+          </button>
         </div>
       </div>
     </Layout>
