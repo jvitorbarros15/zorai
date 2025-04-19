@@ -37,9 +37,11 @@ const Layout = ({ children }) => {
                   About
                 </button>
               </Link>
-              <button className="bg-gradient-to-r from-[#00F5D4] to-[#00D4F5] text-[#0F172A] px-6 py-2.5 rounded-lg font-medium hover:opacity-90 transition-all duration-200 shadow-sm hover:shadow-md">
-                Connect Wallet
-              </button>
+              <Link href="/connect">
+                <button className="bg-gradient-to-r from-[#00F5D4] to-[#00D4F5] text-[#0F172A] px-6 py-2.5 rounded-lg font-medium hover:opacity-90 transition-all duration-200 shadow-sm hover:shadow-md">
+                  Connect Wallet
+                </button>
+              </Link>
             </div>
           </div>
         </nav>
