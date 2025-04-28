@@ -68,7 +68,7 @@ export const WalletProvider = ({ children }) => {
     setIsConnected(false);
   };
 
-  // Register image on blockchain
+  // Mock register image function for testing
   const registerImage = async (imageId, model) => {
     if (!isConnected) {
       alert('Please connect your wallet first');
@@ -76,15 +76,11 @@ export const WalletProvider = ({ children }) => {
     }
 
     try {
-      // TODO: Replace with your actual contract address and ABI
-      const contractAddress = 'YOUR_CONTRACT_ADDRESS';
-      const contractABI = []; // Your contract ABI here
-
-      const contract = new ethers.Contract(contractAddress, contractABI, signer);
-      const tx = await contract.registerImage(imageId, model);
-      await tx.wait();
-
-      return tx.hash;
+      // Simulate a transaction delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Return a mock transaction hash
+      return '0x' + Math.random().toString(16).substr(2, 64);
     } catch (error) {
       console.error('Error registering image:', error);
       throw error;
@@ -100,6 +96,14 @@ export const WalletProvider = ({ children }) => {
     };
 
     checkConnection();
+
+    // Cleanup event listeners
+    return () => {
+      if (window.ethereum) {
+        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+        window.ethereum.removeListener('chainChanged', handleChainChanged);
+      }
+    };
   }, []);
 
   return (
@@ -120,7 +124,7 @@ export const WalletProvider = ({ children }) => {
 
 export const useWallet = () => {
   const context = useContext(WalletContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useWallet must be used within a WalletProvider');
   }
   return context;

@@ -96,7 +96,7 @@ export default function Submit() {
   return (
     <Layout>
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-center bg-gradient-to-r from-[#00F5D4] to-[#00D4F5] text-transparent bg-clip-text">Submit New Image</h1>
+        <h1 className="text-3xl md:text-4xl font-bold mb-3 bg-gradient-to-r from-[#00F5D4] to-[#00D4F5] text-transparent bg-clip-text text-center">Register New Image</h1>
         
         {!isConnected ? (
           <div className="bg-[#1E293B] rounded-lg p-8 text-center">
