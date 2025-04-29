@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Layout from '../components/layout/Layout';
 import { useWallet } from '../contexts/WalletContext';
 import Link from 'next/link';
+import CryptoJS from 'crypto-js';
 
 export default function Submit() {
   const [formData, setFormData] = useState({
@@ -10,7 +11,10 @@ export default function Submit() {
     autoDetect: false,
     image: null,
     imagePreview: null,
-    fullSizePreview: null
+    fullSizePreview: null,
+    ipfsHash: '',
+    txHash: '',
+    timestamp: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const { isConnected, registerImage } = useWallet();
@@ -24,10 +28,24 @@ export default function Submit() {
     reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
-        // Store full size preview
+        // Generate image ID using SHA256
+        const timestamp = Date.now();
+        const imageId = CryptoJS.SHA256(file.name + timestamp).toString();
+        
+        // Generate mock IPFS hash (in production, this would come from Pinata)
+        const ipfsHash = CryptoJS.SHA256(imageId).toString().substring(0, 46);
+        
+        // Generate mock transaction hash (in production, this would come from blockchain)
+        const txHash = CryptoJS.SHA256(ipfsHash).toString();
+
+        // Store full size preview and update form data
         setFormData(prev => ({
           ...prev,
-          fullSizePreview: e.target.result
+          fullSizePreview: e.target.result,
+          imageId,
+          ipfsHash,
+          txHash,
+          timestamp: new Date(timestamp).toISOString()
         }));
 
         // Create small version for storage (32x32 pixels)
@@ -160,21 +178,44 @@ export default function Submit() {
               </div>
             </div>
 
-            {/* Image ID Input */}
+            {/* Image ID Display */}
             <div>
-              <label htmlFor="imageId" className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-2">
                 Image ID
               </label>
-              <input
-                type="text"
-                id="imageId"
-                name="imageId"
-                value={formData.imageId}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 bg-[#1E293B] border border-[#334155] rounded-lg focus:outline-none focus:border-[#00F5D4] text-[#F1F5F9]"
-                placeholder="Enter image ID"
-              />
+              <div className="w-full px-4 py-2 bg-[#1E293B] border border-[#334155] rounded-lg text-[#F1F5F9] break-all">
+                {formData.imageId}
+              </div>
+            </div>
+
+            {/* IPFS Hash Display */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                IPFS Hash
+              </label>
+              <div className="w-full px-4 py-2 bg-[#1E293B] border border-[#334155] rounded-lg text-[#F1F5F9] break-all">
+                {formData.ipfsHash}
+              </div>
+            </div>
+
+            {/* Transaction Hash Display */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Transaction Hash
+              </label>
+              <div className="w-full px-4 py-2 bg-[#1E293B] border border-[#334155] rounded-lg text-[#F1F5F9] break-all">
+                {formData.txHash}
+              </div>
+            </div>
+
+            {/* Timestamp Display */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Timestamp
+              </label>
+              <div className="w-full px-4 py-2 bg-[#1E293B] border border-[#334155] rounded-lg text-[#F1F5F9]">
+                {new Date(formData.timestamp).toLocaleString()}
+              </div>
             </div>
 
             {/* AI Model Selection */}

@@ -21,24 +21,29 @@ const Layout = ({ children }) => {
             </Link>
             
             {/* Navigation */}
-            <div className="flex items-center gap-4">
-              <Link href="/">
-                <button className="bg-[#334155] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-[#475569] transition-all duration-200 shadow-sm hover:shadow-md">
+            <div className="flex items-center gap-3 justify-end flex-1">
+              <Link href="/" className="ml-auto">
+                <button className="bg-[#334155] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#475569] transition-all duration-200 shadow-sm hover:shadow-md text-sm">
                   Home
                 </button>
               </Link>
               <Link href="/submit">
-                <button className="bg-[#334155] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-[#475569] transition-all duration-200 shadow-sm hover:shadow-md">
+                <button className="bg-[#334155] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#475569] transition-all duration-200 shadow-sm hover:shadow-md text-sm">
                   Register New Image
                 </button>
               </Link>
               <Link href="/about">
-                <button className="bg-[#334155] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-[#475569] transition-all duration-200 shadow-sm hover:shadow-md">
+                <button className="bg-[#334155] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#475569] transition-all duration-200 shadow-sm hover:shadow-md text-sm">
                   About
                 </button>
               </Link>
+              <Link href="/test-api">
+                <button className="bg-[#334155] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#475569] transition-all duration-200 shadow-sm hover:shadow-md text-sm">
+                  Test API
+                </button>
+              </Link>
               <Link href="/connect">
-                <button className="bg-gradient-to-r from-[#00F5D4] to-[#00D4F5] text-[#0F172A] px-6 py-2.5 rounded-lg font-medium hover:opacity-90 transition-all duration-200 shadow-sm hover:shadow-md">
+                <button className="bg-gradient-to-r from-[#00F5D4] to-[#00D4F5] text-[#0F172A] px-4 py-2 rounded-lg font-medium hover:opacity-90 transition-all duration-200 shadow-sm hover:shadow-md text-sm">
                   Connect Wallet
                 </button>
               </Link>

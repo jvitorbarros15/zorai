@@ -4,15 +4,17 @@ import { useWallet } from '../contexts/WalletContext';
 
 export default function Connect() {
   const [isConnecting, setIsConnecting] = useState(false);
+  const [error, setError] = useState('');
   const { connectWallet, isConnected, account } = useWallet();
 
   const handleConnect = async () => {
     setIsConnecting(true);
+    setError('');
     try {
       await connectWallet();
     } catch (error) {
       console.error('Error connecting wallet:', error);
-      alert('Failed to connect wallet. Please make sure MetaMask is installed and try again.');
+      setError(error.message || 'Failed to connect wallet. Please try again.');
     } finally {
       setIsConnecting(false);
     }
@@ -21,7 +23,7 @@ export default function Connect() {
   return (
     <Layout>
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-center bg-gradient-to-r from-[#00F5D4] to-[#00D4F5] text-transparent bg-clip-text">Connect Your Wallet</h1>
+        <h1 className="text-3xl md:text-4xl font-bold mb-3 bg-gradient-to-r from-[#00F5D4] to-[#00D4F5] text-transparent bg-clip-text text-center">Connect Your Wallet</h1>
         
         <div className="bg-[#1E293B] rounded-lg p-8 shadow-lg">
           <div className="space-y-6">
@@ -36,9 +38,12 @@ export default function Connect() {
                   />
                   <h3 className="text-2xl font-bold text-center">MetaMask</h3>
                   <p className="text-base text-[#94A3B8] text-center">Connect using MetaMask wallet</p>
+                  {error && (
+                    <p className="text-red-500 text-sm text-center mt-2">{error}</p>
+                  )}
                 </div>
                 <button 
-                  className="w-[100px] bg-gradient-to-r from-[#00F5D4] to-[#00D4F5] text-[#0F172A] px-10 py-5 rounded-2xl font-extrabold hover:shadow-2xl hover:scale-105 transition-all duration-200 flex items-center justify-center gap-4 text-2xl"
+                  className="w-32 bg-gradient-to-r from-[#00F5D4] to-[#00D4F5] text-[#0F172A] px-6 py-3 rounded-xl font-bold text-lg hover:shadow-2xl hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2"
                   onClick={handleConnect}
                   disabled={isConnecting || isConnected}
                 >
@@ -49,7 +54,7 @@ export default function Connect() {
                       <span>Connected</span>
                       <svg 
                         xmlns="http://www.w3.org/2000/svg" 
-                        className="h-7 w-7" 
+                        className="h-5 w-5" 
                         viewBox="0 0 20 20" 
                         fill="currentColor"
                       >
@@ -61,7 +66,7 @@ export default function Connect() {
                       <span>Connect</span>
                       <svg 
                         xmlns="http://www.w3.org/2000/svg" 
-                        className="h-7 w-7" 
+                        className="h-5 w-5" 
                         viewBox="0 0 20 20" 
                         fill="currentColor"
                       >

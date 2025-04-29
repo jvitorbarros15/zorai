@@ -24,7 +24,23 @@ export const WalletProvider = ({ children }) => {
 
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
-      const accounts = await provider.send("eth_requestAccounts", []);
+      
+      // Request account access
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts'
+      }).catch((error) => {
+        if (error.code === 4001) {
+          // User rejected request
+          throw new Error('Please connect your wallet to continue.');
+        } else {
+          throw error; // Re-throw other errors
+        }
+      });
+
+      if (!accounts || accounts.length === 0) {
+        throw new Error('No accounts found. Please connect your wallet.');
+      }
+
       const signer = await provider.getSigner();
       const network = await provider.getNetwork();
 
@@ -40,7 +56,14 @@ export const WalletProvider = ({ children }) => {
       window.ethereum.on('chainChanged', handleChainChanged);
     } catch (error) {
       console.error('Error connecting to MetaMask:', error);
-      alert('Error connecting to MetaMask. Please try again.');
+      // Show user-friendly error message
+      if (error.message.includes('connect your wallet')) {
+        alert(error.message);
+      } else {
+        alert('Failed to connect wallet. Please try again.');
+      }
+      // Reset state on error
+      disconnectWallet();
     }
   };
 
@@ -57,6 +80,8 @@ export const WalletProvider = ({ children }) => {
   // Handle chain changes
   const handleChainChanged = (chainId) => {
     setChainId(chainId);
+    // Reload the page on chain change as recommended by MetaMask
+    window.location.reload();
   };
 
   // Disconnect wallet
