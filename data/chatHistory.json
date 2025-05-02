@@ -40,5 +40,17 @@
     "prompt": "hey\\",
     "response": "Hello! How can I assist you today?",
     "timestamp": "2025-04-29T04:21:53.216Z"
+  },
+  {
+    "id": "1745933320285",
+    "prompt": "hey",
+    "response": "Hello! How can I help you today?",
+    "timestamp": "2025-04-29T13:28:40.285Z"
+  },
+  {
+    "id": "1745933335134",
+    "prompt": "do u know about physics",
+    "response": "Yes! I have knowledge about physics and can provide information and answer questions related to the subject. Feel free to ask me anything you'd like to know!",
+    "timestamp": "2025-04-29T13:28:55.134Z"
   }
 ]

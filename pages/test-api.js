@@ -1,31 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Layout from '../components/layout/Layout';
 
 export default function TestAPI() {
   const [prompt, setPrompt] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [result, setResult] = useState(null);
-  const [chatHistory, setChatHistory] = useState([]);
-  const [mode, setMode] = useState('chat'); // 'chat' or 'image'
+  const [imageUrl, setImageUrl] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [analysis, setAnalysis] = useState(null);
 
-  // Fetch chat history on component mount
-  useEffect(() => {
-    if (mode === 'chat') {
-      fetchChatHistory();
-    }
-  }, [mode]);
-
-  // Generate new chat response or image
-  const handleGenerate = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setResult(null);
+    setIsLoading(true);
+    setError('');
+    setImageUrl('');
+    setAnalysis(null);
 
     try {
-      const endpoint = mode === 'chat' ? '/api/fetchChatHistory' : '/api/generateImage';
-      const response = await fetch(endpoint, {
+      const response = await fetch('/api/generateImage', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -36,217 +27,113 @@ export default function TestAPI() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || `Failed to ${mode === 'chat' ? 'generate chat' : 'generate image'}`);
+        throw new Error(data.error || 'Failed to generate image');
       }
 
-      setResult(data.data);
-      if (mode === 'chat') {
-        fetchChatHistory();
-      }
-      // Clear the input field after successful submission
-      setPrompt('');
+      setImageUrl(data.data.imageUrl);
+      setAnalysis(data.data);
     } catch (err) {
+      console.error('Error:', err);
       setError(err.message);
     } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fetch chat history
-  const fetchChatHistory = async () => {
-    try {
-      const response = await fetch('/api/fetchChatHistory');
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch chat history');
-      }
-
-      setChatHistory(data.data);
-    } catch (err) {
-      console.error('Error fetching chat history:', err);
+      setIsLoading(false);
     }
   };
 
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-8 text-center bg-gradient-to-r from-[#00F5D4] to-[#00D4F5] text-transparent bg-clip-text">
-          API Test Page
-        </h1>
-
-        {/* Mode Selection */}
-        <div className="mb-6 flex justify-center gap-4">
-          <button
-            onClick={() => setMode('chat')}
-            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-              mode === 'chat'
-                ? 'bg-gradient-to-r from-[#00F5D4] to-[#00D4F5] text-[#0F172A]'
-                : 'bg-[#334155] text-white hover:bg-[#475569]'
-            }`}
-          >
-            Chat Mode
-          </button>
-          <button
-            onClick={() => setMode('image')}
-            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-              mode === 'image'
-                ? 'bg-gradient-to-r from-[#00F5D4] to-[#00D4F5] text-[#0F172A]'
-                : 'bg-[#334155] text-white hover:bg-[#475569]'
-            }`}
-          >
-            Image Mode
-          </button>
-        </div>
-
-        {/* Input Form */}
-        <div className="mb-12 bg-[#1E293B] p-6 rounded-lg">
-          <h2 className="text-xl font-semibold mb-4 text-white">
-            {mode === 'chat' ? 'New Chat' : 'Generate Image'}
-          </h2>
-          <form onSubmit={handleGenerate} className="space-y-4">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-3xl md:text-4xl font-bold mb-3 bg-gradient-to-r from-[#00F5D4] to-[#00D4F5] text-transparent bg-clip-text text-center">Test Image Generation API</h1>
+        
+        <div className="bg-[#1E293B] rounded-lg p-8 shadow-lg">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium mb-2 text-[#94A3B8]">
-                {mode === 'chat' ? 'Your Question' : 'Image Prompt'}
+              <label htmlFor="prompt" className="block text-sm font-medium mb-2">
+                Enter your image prompt
               </label>
-              <input
-                type="text"
+              <textarea
+                id="prompt"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                className="w-full px-4 py-2 bg-[#0F172A] border border-[#334155] rounded-lg focus:outline-none focus:border-[#00F5D4] text-white"
-                placeholder={mode === 'chat' ? 'Ask about AI image verification...' : 'Describe the image you want to generate...'}
+                className="w-full px-4 py-2 bg-[#0F172A] border border-[#334155] rounded-lg focus:outline-none focus:border-[#00F5D4] text-[#F1F5F9] min-h-[100px]"
+                placeholder="Describe the image you want to generate..."
+                required
               />
             </div>
+
             <button
               type="submit"
-              disabled={loading}
-              className={`w-full bg-gradient-to-r from-[#00F5D4] to-[#00D4F5] text-[#0F172A] px-4 py-2 rounded-lg font-medium hover:opacity-90 transition-all duration-200 ${
-                loading ? 'opacity-50 cursor-not-allowed' : ''
+              disabled={isLoading}
+              className={`w-full bg-gradient-to-r from-[#00F5D4] to-[#00D4F5] text-[#0F172A] px-4 py-2 rounded-lg font-medium hover:shadow-lg hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2 ${
+                isLoading ? 'opacity-50 cursor-not-allowed' : ''
               }`}
             >
-              {loading ? 'Generating...' : mode === 'chat' ? 'Send Message' : 'Generate Image'}
+              {isLoading ? (
+                <span>Generating...</span>
+              ) : (
+                <>
+                  <span>Generate Image</span>
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    className="h-4 w-4" 
+                    viewBox="0 0 20 20" 
+                    fill="currentColor"
+                  >
+                    <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                  </svg>
+                </>
+              )}
             </button>
           </form>
 
-          {/* Error Display */}
           {error && (
             <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-              <p className="text-red-500">
-                {error.includes('Content policy violation') ? (
-                  <>
-                    <span className="font-semibold">⚠️ Content Policy Violation</span>
-                    <br />
-                    This prompt contains content that violates our content policy. Please try a different prompt.
-                    <br />
-                    <span className="text-sm text-red-400 mt-2 block">
-                      Tips for better prompts:
-                      <ul className="list-disc list-inside mt-1 ml-4">
-                        <li>Avoid offensive or inappropriate content</li>
-                        <li>Focus on positive and constructive imagery</li>
-                        <li>Be creative while staying within community guidelines</li>
-                      </ul>
-                    </span>
-                  </>
-                ) : (
-                  error
-                )}
-              </p>
+              <p className="text-red-400">{error}</p>
             </div>
           )}
 
-          {/* Result Display */}
-          {result && (
-            <div className="mt-6 p-4 bg-[#0F172A] rounded-lg">
-              <h3 className="text-lg font-medium mb-3 text-[#00F5D4]">
-                {mode === 'chat' ? 'Response' : 'Generated Image'}
-              </h3>
-              <div className="space-y-2">
-                {mode === 'chat' ? (
-                  <>
-                    <p className="text-sm text-[#94A3B8]">
-                      <strong>Question:</strong> {result.prompt}
-                    </p>
-                    <p className="text-sm text-[#94A3B8]">
-                      <strong>Response:</strong> {result.response}
-                    </p>
-                    <p className="text-sm text-[#94A3B8]">
-                      <strong>Time:</strong> {new Date(result.timestamp).toLocaleString()}
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <img
-                      src={result.imageUrl}
-                      alt={result.prompt}
-                      className="w-full h-auto rounded-lg"
-                    />
-                    <p className="text-sm text-[#94A3B8]">
-                      <strong>Prompt:</strong> {result.prompt}
-                    </p>
-                    <p className="text-sm text-[#94A3B8]">
-                      <strong>Generated with:</strong> {result.modelUsed}
-                    </p>
-                    <p className="text-sm text-[#94A3B8]">
-                      <strong>Time:</strong> {new Date(result.timestamp).toLocaleString()}
-                    </p>
-                    {result.isRisky && (
-                      <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-                        <h4 className="text-lg font-semibold text-red-500 mb-2">⚠️ Risk Analysis</h4>
-                        <p className="text-sm text-red-400 mb-2">
-                          <strong>Risk Level:</strong> {result.riskLevel.toUpperCase()}
-                        </p>
-                        <div className="space-y-2">
-                          <p className="text-sm text-red-400">
-                            <strong>Potential Risks:</strong>
-                          </p>
-                          <ul className="list-disc list-inside text-sm text-red-400 ml-4">
-                            {result.reasons.map((reason, index) => (
-                              <li key={index}>{reason}</li>
+          {imageUrl && (
+            <div className="mt-6 space-y-4">
+              <div className="relative w-full aspect-square">
+                <img 
+                  src={imageUrl} 
+                  alt="Generated" 
+                  className="w-full h-full object-contain rounded-lg border border-[#334155]"
+                />
+              </div>
+
+              {analysis && (
+                <div className="space-y-4">
+                  <div className="p-4 bg-[#0F172A] rounded-lg border border-[#334155]">
+                    <h3 className="text-lg font-semibold mb-2 text-[#00F5D4]">Analysis Results</h3>
+                    <div className="space-y-2">
+                      <p className="text-sm">
+                        <span className="text-[#94A3B8]">Risk Level:</span>{' '}
+                        <span className={`font-medium ${
+                          analysis.riskLevel === 'high' ? 'text-red-400' :
+                          analysis.riskLevel === 'medium' ? 'text-yellow-400' :
+                          'text-green-400'
+                        }`}>
+                          {analysis.riskLevel.toUpperCase()}
+                        </span>
+                      </p>
+                      {analysis.reasons.length > 0 && (
+                        <div>
+                          <p className="text-sm text-[#94A3B8] mb-1">Reasons:</p>
+                          <ul className="list-disc list-inside text-sm space-y-1">
+                            {analysis.reasons.map((reason, index) => (
+                              <li key={index} className="text-[#F1F5F9]">{reason}</li>
                             ))}
                           </ul>
                         </div>
-                        <p className="text-sm text-red-400 mt-2">
-                          This image has been registered on the blockchain for transparency and accountability.
-                        </p>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
-
-        {/* Chat History (only shown in chat mode) */}
-        {mode === 'chat' && (
-          <div className="bg-[#1E293B] p-6 rounded-lg">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-white">Chat History</h2>
-              <button
-                onClick={fetchChatHistory}
-                className="px-4 py-2 bg-[#334155] text-white rounded-lg hover:bg-[#475569] transition-all duration-200"
-              >
-                Refresh
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {chatHistory.map((chat) => (
-                <div key={chat.id} className="p-4 bg-[#0F172A] rounded-lg">
-                  <p className="text-sm text-[#94A3B8] mb-1">
-                    <strong>Question:</strong> {chat.prompt}
-                  </p>
-                  <p className="text-sm text-[#94A3B8] mb-1">
-                    <strong>Response:</strong> {chat.response}
-                  </p>
-                  <p className="text-sm text-[#94A3B8]">
-                    <strong>Time:</strong> {new Date(chat.timestamp).toLocaleString()}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </Layout>
   );
