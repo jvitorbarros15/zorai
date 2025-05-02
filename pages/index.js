@@ -137,83 +137,80 @@ export default function Home() {
         )}
 
         {/* Medium/High-Risk Images Section */}
-        {isConnected && (
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-red-400">Medium/High-Risk Images (Blockchain Verified)</h2>
-              {isLoading && (
-                <div className="flex items-center gap-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-400"></div>
-                  <span className="text-sm text-[#94A3B8]">Loading...</span>
-                </div>
-              )}
-            </div>
-            
-            {!isContractDeployed ? (
-              <div className="bg-[#1E293B] p-4 rounded-lg border border-red-500/20">
-                <p className="text-red-400 text-sm">Contract is not deployed. Please check your configuration.</p>
-              </div>
-            ) : filteredHighRiskImages.length === 0 ? (
-              <div className="bg-[#1E293B] p-4 rounded-lg border border-[#334155]">
-                <p className="text-[#94A3B8] text-sm">No high-risk images found.</p>
-              </div>
-            ) : (
-              <div className="grid gap-2">
-                {filteredHighRiskImages.map((image) => (
-                  (() => { console.log('Blockchain image object:', image); return null; })(),
-                  <div
-                    key={image.ipfsHash}
-                    className="bg-[#1E293B] p-4 rounded-lg border border-red-500/20 hover:border-red-500/40 transition-all duration-300 transform hover:-translate-y-1"
-                  >
-                    <div className="flex items-center gap-4">
-                      {/* Image Preview */}
-                      <div className="w-[40px] h-[40px] relative flex-shrink-0">
-                        {(() => { console.log('ipfsHash for image:', image.ipfsHash); return null; })()}
-                        {image.ipfsHash && (image.ipfsHash.startsWith('Qm') || image.ipfsHash.startsWith('bafy')) ? (
-                          <img 
-                            src={`https://gateway.pinata.cloud/ipfs/${image.ipfsHash}`}
-                            alt={image.ipfsHash}
-                            className="w-full h-full object-contain rounded-lg border border-[#334155]"
-                          />
-                        ) : (
-                          <span className="text-xs text-[#94A3B8]">No image</span>
-                        )}
-                      </div>
-                      
-                      {/* Image Details */}
-                      <div className="flex-1">
-                        <div className="flex flex-col gap-2">
-                          <div className="flex items-center justify-between">
-                            <h3 className="text-sm font-semibold text-red-400">Blockchain Verified</h3>
-                            <span className="px-2 py-1 rounded-full text-xs bg-red-500/20 text-red-400">
-                              High Risk
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between text-sm">
-                            <p className="text-[#94A3B8]">Generated with {image.modelUsed}</p>
-                            <div className="flex items-center gap-2">
-                              <span className="text-[#94A3B8] text-xs">{image.timestamp}</span>
-                            </div>
-                          </div>
-                          {image.riskReasons && image.riskReasons.length > 0 && (
-                            <div className="mt-2">
-                              <p className="text-xs text-[#94A3B8]">Risk Reasons:</p>
-                              <ul className="list-disc list-inside text-xs text-red-400">
-                                {image.riskReasons.map((reason, index) => (
-                                  <li key={index}>{reason}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-red-400">Medium/High-Risk Images (Blockchain Verified)</h2>
+            {isLoading && (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-400"></div>
+                <span className="text-sm text-[#94A3B8]">Loading...</span>
               </div>
             )}
           </div>
-        )}
+          {!isContractDeployed ? (
+            <div className="bg-[#1E293B] p-4 rounded-lg border border-red-500/20">
+              <p className="text-red-400 text-sm">Contract is not deployed. Please check your configuration.</p>
+            </div>
+          ) : filteredHighRiskImages.length === 0 ? (
+            <div className="bg-[#1E293B] p-4 rounded-lg border border-[#334155]">
+              <p className="text-[#94A3B8] text-sm">No high-risk images found.</p>
+            </div>
+          ) : (
+            <div className="grid gap-2">
+              {filteredHighRiskImages.map((image) => (
+                (() => { console.log('Blockchain image object:', image); return null; })(),
+                <div
+                  key={image.ipfsHash}
+                  className="bg-[#1E293B] p-4 rounded-lg border border-red-500/20 hover:border-red-500/40 transition-all duration-300 transform hover:-translate-y-1"
+                >
+                  <div className="flex items-center gap-4">
+                    {/* Image Preview */}
+                    <div className="w-[40px] h-[40px] relative flex-shrink-0">
+                      {(() => { console.log('ipfsHash for image:', image.ipfsHash); return null; })()}
+                      {image.ipfsHash && (image.ipfsHash.startsWith('Qm') || image.ipfsHash.startsWith('bafy')) ? (
+                        <img 
+                          src={`https://gateway.pinata.cloud/ipfs/${image.ipfsHash}`}
+                          alt={image.ipfsHash}
+                          className="w-full h-full object-contain rounded-lg border border-[#334155]"
+                        />
+                      ) : (
+                        <span className="text-xs text-[#94A3B8]">No image</span>
+                      )}
+                    </div>
+                    
+                    {/* Image Details */}
+                    <div className="flex-1">
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-sm font-semibold text-red-400">Blockchain Verified</h3>
+                          <span className="px-2 py-1 rounded-full text-xs bg-red-500/20 text-red-400">
+                            High Risk
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <p className="text-[#94A3B8]">Generated with {image.modelUsed}</p>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[#94A3B8] text-xs">{image.timestamp}</span>
+                          </div>
+                        </div>
+                        {image.riskReasons && image.riskReasons.length > 0 && (
+                          <div className="mt-2">
+                            <p className="text-xs text-[#94A3B8]">Risk Reasons:</p>
+                            <ul className="list-disc list-inside text-xs text-red-400">
+                              {image.riskReasons.map((reason, index) => (
+                                <li key={index}>{reason}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Regular Images Section */}
         <div>
