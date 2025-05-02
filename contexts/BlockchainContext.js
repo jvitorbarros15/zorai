@@ -65,8 +65,10 @@ export function BlockchainProvider({ children }) {
 
   const initializeContract = async () => {
     try {
+      let provider;
       if (typeof window.ethereum !== 'undefined') {
-        const provider = new ethers.BrowserProvider(window.ethereum, {
+        // Use MetaMask if available
+        provider = new ethers.BrowserProvider(window.ethereum, {
           name: 'bnb-testnet',
           chainId: 97,
           ensAddress: null
@@ -90,35 +92,32 @@ export function BlockchainProvider({ children }) {
             return;
           }
         }
-
-        const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
-        if (!contractAddress) {
-          throw new Error('Contract address not found in environment variables');
-        }
-
-        // Check if contract is deployed
-        const code = await provider.getCode(contractAddress);
-        if (code === '0x') {
-          throw new Error('Contract is not deployed at the specified address');
-        }
-
-        // Fix: Get signer manually to avoid ENS resolution
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        const signer = provider.getSigner(accounts[0]);
-
-        // Use the signer for contract interactions
-        const contract = new ethers.Contract(
-          contractAddress,
-          ZorAiRegistry.abi,
-          signer
-        );
-        
-        setContract(contract);
-        setIsContractDeployed(true);
-        setError(null);
       } else {
-        throw new Error('Please install MetaMask to use this feature');
+        // Fallback to public read-only provider for BNB Testnet
+        provider = new ethers.JsonRpcProvider('https://bsc-testnet.bnbchain.org', 97);
+        setCurrentNetwork({ chainId: 97, name: 'BNB Smart Chain Testnet' });
       }
+
+      const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
+      if (!contractAddress) {
+        throw new Error('Contract address not found in environment variables');
+      }
+
+      // Check if contract is deployed
+      const code = await provider.getCode(contractAddress);
+      if (code === '0x') {
+        throw new Error('Contract is not deployed at the specified address');
+      }
+
+      // Use the provider for contract interactions (read-only if no MetaMask)
+      const contract = new ethers.Contract(
+        contractAddress,
+        ZorAiRegistry.abi,
+        provider
+      );
+      setContract(contract);
+      setIsContractDeployed(true);
+      setError(null);
     } catch (err) {
       console.error('Error initializing contract:', err);
       // Filter out ENS-related errors as they're not critical
