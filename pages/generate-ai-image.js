@@ -68,7 +68,12 @@ export default function GenerateAIImage() {
         body: JSON.stringify({ prompt }),
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonErr) {
+        throw new Error('Server error: Please try again later.');
+      }
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to generate image');
