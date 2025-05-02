@@ -25,11 +25,11 @@ export default function Home() {
     const storedImages = JSON.parse(localStorage.getItem('registeredImages') || '[]');
     setImages(storedImages);
     loadMediumAndHighRiskImages();
-  }, [isConnected, lastRefresh]); // Reload when wallet connects or data refreshes
+  }, [isContractDeployed, lastRefresh]); // Reload when contract is ready or data refreshes
 
   const loadMediumAndHighRiskImages = async () => {
     try {
-      if (isConnected && isContractDeployed) {
+      if (isContractDeployed) {
         setIsLoading(true);
         const blockchainImages = await getMediumAndHighRiskImages();
         setHighRiskImages(blockchainImages);
