@@ -5,7 +5,7 @@ import { useWallet } from '../contexts/WalletContext';
 export default function Connect() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState('');
-  const { connectWallet, isConnected, account } = useWallet();
+  const { connectWallet, isConnected, account, disconnectWallet } = useWallet();
 
   const handleConnect = async () => {
     setIsConnecting(true);
@@ -77,9 +77,15 @@ export default function Connect() {
                 </button>
               </div>
               {isConnected && account && (
-                <div className="mt-4 p-4 bg-[#334155] rounded-lg">
+                <div className="mt-4 p-4 bg-[#334155] rounded-lg flex flex-col items-center">
                   <p className="text-sm text-[#94A3B8]">Connected Account:</p>
                   <p className="text-sm font-mono">{account}</p>
+                  <button
+                    onClick={disconnectWallet}
+                    className="mt-4 bg-red-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-600 transition-all"
+                  >
+                    Disconnect
+                  </button>
                 </div>
               )}
             </div>

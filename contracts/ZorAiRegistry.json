@@ -1,0 +1,341 @@
+{
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "string",
+          "name": "imageId",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "ipfsHash",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "modelUsed",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "creator",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "enum ZorAiRegistry.RiskLevel",
+          "name": "riskLevel",
+          "type": "uint8"
+        }
+      ],
+      "name": "ImageRegistered",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "string",
+          "name": "imageId",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "isVerified",
+          "type": "bool"
+        },
+        {
+          "indexed": false,
+          "internalType": "enum ZorAiRegistry.RiskLevel",
+          "name": "riskLevel",
+          "type": "uint8"
+        }
+      ],
+      "name": "ImageVerified",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "imageId",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "modelUsed",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "ipfsHash",
+          "type": "string"
+        },
+        {
+          "internalType": "enum ZorAiRegistry.RiskLevel",
+          "name": "riskLevel",
+          "type": "uint8"
+        },
+        {
+          "internalType": "string[]",
+          "name": "riskReasons",
+          "type": "string[]"
+        }
+      ],
+      "name": "registerImage",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "imageId",
+          "type": "string"
+        },
+        {
+          "internalType": "bool",
+          "name": "isVerified",
+          "type": "bool"
+        },
+        {
+          "internalType": "enum ZorAiRegistry.RiskLevel",
+          "name": "riskLevel",
+          "type": "uint8"
+        },
+        {
+          "internalType": "string[]",
+          "name": "riskReasons",
+          "type": "string[]"
+        }
+      ],
+      "name": "updateVerification",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getHighRiskImages",
+      "outputs": [
+        {
+          "internalType": "string[]",
+          "name": "",
+          "type": "string[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "imageId",
+          "type": "string"
+        }
+      ],
+      "name": "getImageData",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "ipfsHash",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "modelUsed",
+          "type": "string"
+        },
+        {
+          "internalType": "address",
+          "name": "creator",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "isVerified",
+          "type": "bool"
+        },
+        {
+          "internalType": "enum ZorAiRegistry.RiskLevel",
+          "name": "riskLevel",
+          "type": "uint8"
+        },
+        {
+          "internalType": "string[]",
+          "name": "riskReasons",
+          "type": "string[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getTotalHighRiskImages",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getTotalImages",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "highRiskImages",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "name": "images",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "ipfsHash",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "modelUsed",
+          "type": "string"
+        },
+        {
+          "internalType": "address",
+          "name": "creator",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "isVerified",
+          "type": "bool"
+        },
+        {
+          "internalType": "enum ZorAiRegistry.RiskLevel",
+          "name": "riskLevel",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "imageId",
+          "type": "string"
+        }
+      ],
+      "name": "isHighRisk",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "imageId",
+          "type": "string"
+        }
+      ],
+      "name": "isImageRegistered",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "registeredImages",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+} 

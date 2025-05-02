@@ -37,9 +37,9 @@ const Layout = ({ children }) => {
                   About
                 </button>
               </Link>
-              <Link href="/test-api">
+              <Link href="/generate-ai-image">
                 <button className="bg-[#334155] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#475569] transition-all duration-200 shadow-sm hover:shadow-md text-sm">
-                  Test API
+                  Generate AI Image
                 </button>
               </Link>
               <Link href="/connect">
