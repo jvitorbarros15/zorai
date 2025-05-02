@@ -79,7 +79,7 @@ const Layout = ({ children }) => {
                   GitHub
                 </a>
                 <a
-                  href="https://etherscan.io/address/your-contract-address"
+                  href="https://testnet.bscscan.com/address/0x47adc07617d59984ea5da9d59d3f3a0882737556"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block text-sm text-[#94A3B8] hover:text-[#00F5D4]"

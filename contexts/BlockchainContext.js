@@ -66,21 +66,29 @@ export function BlockchainProvider({ children }) {
   const initializeContract = async () => {
     try {
       if (typeof window.ethereum !== 'undefined') {
-        
         const provider = new ethers.BrowserProvider(window.ethereum, {
           name: 'bnb-testnet',
           chainId: 97,
           ensAddress: null
         });
-        
         // Get the network from MetaMask for UI status
         const network = await provider.getNetwork();
         setCurrentNetwork(network);
-
         // Check if we're on BNB Testnet (fix: always compare as number)
         const chainId = Number(network.chainId) || Number(window.ethereum.chainId);
         if (chainId !== 97) {
-          throw new Error('Please switch to BNB Smart Chain Testnet');
+          // Prompt user to switch network
+          try {
+            await switchToBnbTestnet();
+            // After switching, reload to re-init contract
+            window.location.reload();
+            return;
+          } catch (switchErr) {
+            setError('Please switch to BNB Smart Chain Testnet in MetaMask to use this app.');
+            setIsContractDeployed(false);
+            setIsLoading(false);
+            return;
+          }
         }
 
         const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
