@@ -23,22 +23,15 @@ export default function Submit() {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Create a full size preview
     const reader = new FileReader();
     reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
-        // Generate image ID using SHA256
         const timestamp = Date.now();
         const imageId = CryptoJS.SHA256(file.name + timestamp).toString();
-        
-        // Generate mock IPFS hash (in production, this would come from Pinata)
         const ipfsHash = CryptoJS.SHA256(imageId).toString().substring(0, 46);
-        
-        // Generate mock transaction hash (in production, this would come from blockchain)
         const txHash = CryptoJS.SHA256(ipfsHash).toString();
 
-        // Store full size preview and update form data
         setFormData(prev => ({
           ...prev,
           fullSizePreview: e.target.result,
@@ -48,7 +41,6 @@ export default function Submit() {
           timestamp: new Date(timestamp).toISOString()
         }));
 
-        // Create small version for storage (32x32 pixels)
         const storageCanvas = document.createElement('canvas');
         storageCanvas.width = 32;
         storageCanvas.height = 32;
@@ -56,11 +48,7 @@ export default function Submit() {
         storageCtx.drawImage(img, 0, 0, 32, 32);
         const smallImageData = storageCanvas.toDataURL('image/jpeg', 0.1);
 
-        setFormData(prev => ({
-          ...prev,
-          image: smallImageData,
-          imagePreview: smallImageData
-        }));
+        setFormData(prev => ({ ...prev, image: smallImageData, imagePreview: smallImageData }));
       };
       img.src = e.target.result;
     };
@@ -69,31 +57,20 @@ export default function Submit() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!isConnected) {
-      alert('Please connect your wallet first');
-      return;
-    }
-
+    if (!isConnected) { alert('Please connect your wallet first'); return; }
     setIsLoading(true);
     try {
-      // Register image on blockchain
       const txHash = await registerImage(formData.imageId, formData.model);
-      
-      // Store the data in localStorage for now (prototype)
       const images = JSON.parse(localStorage.getItem('registeredImages') || '[]');
-      const newImage = {
+      images.push({
         id: formData.imageId,
         model: formData.model,
         date: new Date().toISOString().split('T')[0],
         status: 'Verified',
         imageData: formData.image,
-        txHash: txHash
-      };
-      images.push(newImage);
+        txHash,
+      });
       localStorage.setItem('registeredImages', JSON.stringify(images));
-      
-      // Redirect to home page
       window.location.href = '/';
     } catch (error) {
       console.error('Error submitting image:', error);
@@ -105,184 +82,215 @@ export default function Submit() {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+    setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
+
+  if (!isConnected) {
+    return (
+      <Layout>
+        <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 24px' }}>
+          <div style={{ padding: '64px 0 48px', borderBottom: '1px solid var(--border)' }}>
+            <p className="section-label" style={{ color: 'var(--accent)', marginBottom: '16px' }}>&nbsp;Register Image</p>
+            <h1 style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: 'clamp(36px, 5vw, 60px)', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '0.03em', margin: 0, lineHeight: 0.95 }}>
+              REGISTER NEW<br />
+              <span style={{ color: 'var(--accent)', textShadow: '0 0 32px var(--accent-glow)' }}>IMAGE</span>
+            </h1>
+          </div>
+
+          <div style={{ padding: '64px 0', display: 'flex', justifyContent: 'center' }}>
+            <div style={{ border: '1px solid var(--border)', borderLeft: '2px solid var(--accent)', backgroundColor: 'var(--bg-surface)', padding: '48px', maxWidth: '440px', width: '100%', textAlign: 'center', boxShadow: '0 0 40px var(--accent-glow)' }}>
+              <div style={{ width: '64px', height: '64px', border: '1px solid var(--accent)', margin: '0 auto 24px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-elevated)' }}>
+                <img src="/metamask-logo.svg" alt="MetaMask" style={{ width: '40px', height: '40px' }} />
+              </div>
+              <h3 style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '22px', fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '0.06em', margin: '0 0 12px' }}>
+                WALLET NOT CONNECTED
+              </h3>
+              <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.7', margin: '0 0 28px', fontFamily: "'Outfit', sans-serif" }}>
+                Connect your MetaMask wallet to register and verify AI images on the blockchain.
+              </p>
+              <Link href="/connect" style={{ textDecoration: 'none' }}>
+                <span className="btn-accent" style={{ width: '100%', display: 'block', textAlign: 'center', padding: '12px' }}>
+                  ⬡ Connect Wallet
+                </span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl md:text-4xl font-bold mb-3 bg-gradient-to-r from-[#00F5D4] to-[#00D4F5] text-transparent bg-clip-text text-center">Register New Image</h1>
-        
-        {!isConnected ? (
-          <div className="bg-[#1E293B] rounded-lg p-8 text-center">
-            <div className="space-y-6">
-              <div className="flex flex-col items-center gap-4">
-                <img 
-                  src="/metamask-logo.svg" 
-                  alt="MetaMask" 
-                  className="w-20 h-20 mb-2"
-                />
-                <h3 className="text-2xl font-bold">Wallet Not Connected</h3>
-                <p className="text-[#94A3B8] max-w-md">
-                  Please connect your MetaMask wallet to submit and register images on the blockchain.
-                </p>
-                <Link href="/connect">
-                  <button className="bg-gradient-to-r from-[#00F5D4] to-[#00D4F5] text-[#0F172A] px-6 py-3 rounded-lg font-medium hover:shadow-lg hover:scale-105 transition-all duration-200 flex items-center gap-2">
-                    <span>Connect Wallet</span>
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      className="h-5 w-5" 
-                      viewBox="0 0 20 20" 
-                      fill="currentColor"
-                    >
-                      <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Image Upload and Preview */}
-            <div>
-              <label htmlFor="image" className="block text-sm font-medium mb-2">
-                Upload Image
-              </label>
-              <div className="flex flex-col gap-4">
-                <input
-                  type="file"
-                  id="image"
-                  name="image"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="block w-full text-sm text-[#94A3B8] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#00F5D4] file:text-[#0F172A] hover:file:bg-[#00D4F5]"
-                />
-                
-                {/* Tiny Preview */}
+      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 24px' }}>
+
+        {/* ── Header ── */}
+        <div style={{ padding: '64px 0 48px', borderBottom: '1px solid var(--border)' }}>
+          <p className="section-label" style={{ color: 'var(--accent)', marginBottom: '16px' }}>&nbsp;Register Image</p>
+          <h1 style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: 'clamp(36px, 5vw, 60px)', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '0.03em', margin: 0, lineHeight: 0.95 }}>
+            REGISTER NEW<br />
+            <span style={{ color: 'var(--accent)', textShadow: '0 0 32px var(--accent-glow)' }}>IMAGE</span>
+          </h1>
+        </div>
+
+        <div style={{ padding: '48px 0' }}>
+          <form onSubmit={handleSubmit}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', alignItems: 'start' }}>
+
+              {/* Left column */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
+                {/* Upload */}
+                <div>
+                  <label style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--accent)', display: 'block', marginBottom: '10px' }}>
+                    Upload Image
+                  </label>
+                  <div style={{
+                    border: '1px solid var(--border)',
+                    borderLeft: '2px solid var(--accent)',
+                    backgroundColor: 'var(--bg-elevated)',
+                    padding: '20px',
+                    cursor: 'pointer',
+                  }}>
+                    <input
+                      type="file"
+                      id="image"
+                      name="image"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      style={{
+                        width: '100%',
+                        fontSize: '13px',
+                        color: 'var(--text-secondary)',
+                        fontFamily: "'JetBrains Mono', monospace",
+                        cursor: 'pointer',
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Preview */}
                 {formData.fullSizePreview && (
-                  <div className="mt-4">
-                    <h3 className="text-sm font-medium mb-2">Preview</h3>
-                    <div className="relative w-[300px] h-[300px] mx-auto">
-                      <img 
-                        src={formData.fullSizePreview} 
-                        alt="Preview" 
-                        className="w-full h-full object-contain rounded-lg border border-[#334155]"
+                  <div>
+                    <label style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--accent)', display: 'block', marginBottom: '10px' }}>
+                      Preview
+                    </label>
+                    <div style={{
+                      border: '1px solid var(--accent)',
+                      boxShadow: '0 0 24px var(--accent-glow)',
+                      overflow: 'hidden',
+                      backgroundColor: 'var(--bg-elevated)',
+                    }}>
+                      <img
+                        src={formData.fullSizePreview}
+                        alt="Preview"
+                        style={{ width: '100%', height: '280px', objectFit: 'contain', display: 'block' }}
                       />
                     </div>
                   </div>
                 )}
+
+                {/* AI Model */}
+                <div>
+                  <label htmlFor="model" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--accent)', display: 'block', marginBottom: '10px' }}>
+                    AI Model
+                  </label>
+                  <select
+                    id="model"
+                    name="model"
+                    value={formData.model}
+                    onChange={handleChange}
+                    required
+                    className="form-field"
+                    style={{ width: '100%' }}
+                  >
+                    <option value="">— Select model —</option>
+                    <option value="DALL-E">DALL-E</option>
+                    <option value="Midjourney">Midjourney</option>
+                    <option value="Stable Diffusion">Stable Diffusion</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                {/* Auto detect */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div
+                    onClick={() => setFormData(prev => ({ ...prev, autoDetect: !prev.autoDetect }))}
+                    style={{
+                      width: '20px',
+                      height: '20px',
+                      border: `1px solid ${formData.autoDetect ? 'var(--accent)' : 'var(--border)'}`,
+                      backgroundColor: formData.autoDetect ? 'var(--accent-dim)' : 'var(--bg-elevated)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    {formData.autoDetect && (
+                      <span style={{ color: 'var(--accent)', fontSize: '12px', lineHeight: 1 }}>✓</span>
+                    )}
+                  </div>
+                  <label style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--text-secondary)', cursor: 'pointer', letterSpacing: '0.06em' }}>
+                    Enable automatic model detection
+                  </label>
+                </div>
+
+                {/* Submit */}
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="btn-accent"
+                  style={{
+                    width: '100%',
+                    textAlign: 'center',
+                    padding: '14px',
+                    fontSize: '12px',
+                    opacity: isLoading ? 0.6 : 1,
+                    cursor: isLoading ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  {isLoading ? '⟳ PROCESSING…' : '⬡ REGISTER ON BLOCKCHAIN'}
+                </button>
               </div>
-            </div>
 
-            {/* Image ID Display */}
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Image ID
-              </label>
-              <div className="w-full px-4 py-2 bg-[#1E293B] border border-[#334155] rounded-lg text-[#F1F5F9] break-all">
-                {formData.imageId}
+              {/* Right column — data display */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
+                {[
+                  { label: 'Image ID (SHA256)', value: formData.imageId || '—' },
+                  { label: 'IPFS Hash', value: formData.ipfsHash || '—' },
+                  { label: 'Transaction Hash', value: formData.txHash || '—' },
+                  { label: 'Timestamp', value: formData.timestamp ? new Date(formData.timestamp).toLocaleString() : '—' },
+                ].map(({ label, value }) => (
+                  <div key={label}>
+                    <label style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--accent)', display: 'block', marginBottom: '8px' }}>
+                      {label}
+                    </label>
+                    <div className="data-block">
+                      {value}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Info panel */}
+                <div style={{ marginTop: '12px', border: '1px solid var(--border)', borderLeft: '2px solid var(--cyan)', backgroundColor: 'var(--bg-surface)', padding: '18px 20px' }}>
+                  <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--cyan)', margin: '0 0 10px' }}>
+                    How Registration Works
+                  </p>
+                  <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.7', margin: 0, fontFamily: "'Outfit', sans-serif" }}>
+                    Your image is hashed with SHA256 to create a unique fingerprint. This ID is stored on Base — creating an immutable, public record of origin.
+                  </p>
+                </div>
               </div>
-            </div>
 
-            {/* IPFS Hash Display */}
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                IPFS Hash
-              </label>
-              <div className="w-full px-4 py-2 bg-[#1E293B] border border-[#334155] rounded-lg text-[#F1F5F9] break-all">
-                {formData.ipfsHash}
-              </div>
-            </div>
-
-            {/* Transaction Hash Display */}
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Transaction Hash
-              </label>
-              <div className="w-full px-4 py-2 bg-[#1E293B] border border-[#334155] rounded-lg text-[#F1F5F9] break-all">
-                {formData.txHash}
-              </div>
-            </div>
-
-            {/* Timestamp Display */}
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Timestamp
-              </label>
-              <div className="w-full px-4 py-2 bg-[#1E293B] border border-[#334155] rounded-lg text-[#F1F5F9]">
-                {new Date(formData.timestamp).toLocaleString()}
-              </div>
-            </div>
-
-            {/* AI Model Selection */}
-            <div>
-              <label htmlFor="model" className="block text-sm font-medium mb-2">
-                AI Model
-              </label>
-              <select
-                id="model"
-                name="model"
-                value={formData.model}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 bg-[#1E293B] border border-[#334155] rounded-lg focus:outline-none focus:border-[#00F5D4] text-[#F1F5F9]"
-              >
-                <option value="">Select a model</option>
-                <option value="DALL-E">DALL-E</option>
-                <option value="Midjourney">Midjourrey</option>
-                <option value="Stable Diffusion">Stable Diffusion</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
-            {/* Auto Detect Checkbox */}
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="autoDetect"
-                name="autoDetect"
-                checked={formData.autoDetect}
-                onChange={handleChange}
-                className="h-4 w-4 text-[#00F5D4] focus:ring-[#00F5D4] border-[#334155] rounded"
-              />
-              <label htmlFor="autoDetect" className="ml-2 block text-sm">
-                Enable automatic model detection
-              </label>
-            </div>
-
-            {/* Submit Button */}
-            <div className="pt-4 flex justify-center">
-              <button
-                type="submit"
-                disabled={isLoading}
-                className={`w-48 bg-gradient-to-r from-[#00F5D4] to-[#00D4F5] text-[#0F172A] px-4 py-2 rounded-lg font-medium hover:shadow-lg hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2 group ${
-                  isLoading ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-              >
-                {isLoading ? (
-                  <span>Processing...</span>
-                ) : (
-                  <>
-                    <span>Register Image</span>
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      className="h-4 w-4 transform group-hover:rotate-90 transition-transform duration-200" 
-                      viewBox="0 0 20 20" 
-                      fill="currentColor"
-                    >
-                      <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-                    </svg>
-                  </>
-                )}
-              </button>
             </div>
           </form>
-        )}
+        </div>
+
       </div>
     </Layout>
   );
-} 
+}

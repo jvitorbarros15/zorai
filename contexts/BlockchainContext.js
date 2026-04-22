@@ -6,16 +6,16 @@ const BlockchainContext = createContext();
 
 // Network configurations
 const NETWORKS = {
-  bnbTestnet: {
-    chainId: '0x61',
-    chainName: 'BNB Smart Chain Testnet',
+  baseSepolia: {
+    chainId: '0x14A34',
+    chainName: 'Base Sepolia',
     nativeCurrency: {
-      name: 'tBNB',
-      symbol: 'tBNB',
+      name: 'Ethereum',
+      symbol: 'ETH',
       decimals: 18
     },
-    rpcUrls: ['https://data-seed-prebsc-1-s1.binance.org:8545'],
-    blockExplorerUrls: ['https://testnet.bscscan.com']
+    rpcUrls: ['https://sepolia.base.org'],
+    blockExplorerUrls: ['https://sepolia.basescan.org']
   }
 };
 
@@ -37,25 +37,24 @@ export function BlockchainProvider({ children }) {
     return () => clearInterval(refreshInterval);
   }, []);
 
-  const switchToBnbTestnet = async () => {
+  const switchToBaseSepolia = async () => {
     try {
       if (typeof window.ethereum !== 'undefined') {
         await window.ethereum.request({
           method: 'wallet_switchEthereumChain',
-          params: [{ chainId: NETWORKS.bnbTestnet.chainId }],
+          params: [{ chainId: NETWORKS.baseSepolia.chainId }],
         });
       }
     } catch (switchError) {
-      
       if (switchError.code === 4902) {
         try {
           await window.ethereum.request({
             method: 'wallet_addEthereumChain',
-            params: [NETWORKS.bnbTestnet],
+            params: [NETWORKS.baseSepolia],
           });
         } catch (addError) {
-          console.error('Error adding BNB Testnet:', addError);
-          throw new Error('Failed to add BNB Testnet to MetaMask');
+          console.error('Error adding Base Sepolia:', addError);
+          throw new Error('Failed to add Base Sepolia to MetaMask');
         }
       } else {
         throw switchError;
@@ -69,33 +68,33 @@ export function BlockchainProvider({ children }) {
       if (typeof window.ethereum !== 'undefined') {
         // Use MetaMask if available
         provider = new ethers.BrowserProvider(window.ethereum, {
-          name: 'bnb-testnet',
-          chainId: 97,
+          name: 'base-sepolia',
+          chainId: 84532,
           ensAddress: null
         });
         // Get the network from MetaMask for UI status
         const network = await provider.getNetwork();
         setCurrentNetwork(network);
-        // Check if we're on BNB Testnet (fix: always compare as number)
+        // Check if we're on Base Sepolia (chain ID 84532)
         const chainId = Number(network.chainId) || Number(window.ethereum.chainId);
-        if (chainId !== 97) {
+        if (chainId !== 84532) {
           // Prompt user to switch network
           try {
-            await switchToBnbTestnet();
+            await switchToBaseSepolia();
             // After switching, reload to re-init contract
             window.location.reload();
             return;
           } catch (switchErr) {
-            setError('Please switch to BNB Smart Chain Testnet in MetaMask to use this app.');
+            setError('Please switch to Base Sepolia in MetaMask to use this app.');
             setIsContractDeployed(false);
             setIsLoading(false);
             return;
           }
         }
       } else {
-        // Fallback to public read-only provider for BNB Testnet
-        provider = new ethers.JsonRpcProvider('https://bsc-testnet.bnbchain.org', 97);
-        setCurrentNetwork({ chainId: 97, name: 'BNB Smart Chain Testnet' });
+        // Fallback to public read-only provider for Base Sepolia
+        provider = new ethers.JsonRpcProvider('https://sepolia.base.org', 84532);
+        setCurrentNetwork({ chainId: 84532, name: 'Base Sepolia' });
       }
 
       const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
@@ -122,7 +121,7 @@ export function BlockchainProvider({ children }) {
       console.error('Error initializing contract:', err);
       // Filter out ENS-related errors as they're not critical
       if (err.code === 'UNSUPPORTED_OPERATION' && err.operation === 'getEnsAddress') {
-        setError('Please switch to BNB Smart Chain Testnet');
+        setError('Please switch to Base Sepolia');
       } else {
         setError(err.message);
       }
@@ -168,7 +167,7 @@ export function BlockchainProvider({ children }) {
   const getImageData = async (imageId) => {
     try {
       // Always use a read-only provider for reads
-      const provider = new ethers.JsonRpcProvider('https://bsc-testnet.bnbchain.org', 97);
+      const provider = new ethers.JsonRpcProvider('https://sepolia.base.org', 84532);
       const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
       const contractReadOnly = new ethers.Contract(
         contractAddress,
@@ -216,7 +215,7 @@ export function BlockchainProvider({ children }) {
         throw new Error('Contract is not deployed');
       }
       // Use a read-only provider for contract calls
-      const provider = new ethers.JsonRpcProvider('https://bsc-testnet.bnbchain.org', 97);
+      const provider = new ethers.JsonRpcProvider('https://sepolia.base.org', 84532);
       const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
       const contractReadOnly = new ethers.Contract(
         contractAddress,
@@ -245,7 +244,7 @@ export function BlockchainProvider({ children }) {
     isContractDeployed,
     lastRefresh,
     currentNetwork,
-    switchToBnbTestnet,
+    switchToBaseSepolia,
     registerImage,
     getImageData,
     getHighRiskImages,

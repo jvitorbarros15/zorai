@@ -9,23 +9,22 @@ export default function Home() {
   const [images, setImages] = useState([]);
   const [highRiskImages, setHighRiskImages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { 
-    getMediumAndHighRiskImages, 
-    isLoading: isBlockchainLoading, 
-    error: blockchainError, 
-    isContractDeployed, 
+  const {
+    getMediumAndHighRiskImages,
+    isLoading: isBlockchainLoading,
+    error: blockchainError,
+    isContractDeployed,
     lastRefresh,
     currentNetwork,
-    switchToBnbTestnet 
+    switchToBaseSepolia,
   } = useBlockchain();
   const { isConnected } = useWallet();
 
   useEffect(() => {
-    // Load images from localStorage
     const storedImages = JSON.parse(localStorage.getItem('registeredImages') || '[]');
     setImages(storedImages);
     loadMediumAndHighRiskImages();
-  }, [isContractDeployed, lastRefresh]); // Reload when contract is ready or data refreshes
+  }, [isContractDeployed, lastRefresh]);
 
   const loadMediumAndHighRiskImages = async () => {
     try {
@@ -42,11 +41,8 @@ export default function Home() {
   };
 
   const handleDelete = (imageId) => {
-    // Filter out the image to be deleted
     const updatedImages = images.filter(image => image.id !== imageId);
-    // Update localStorage
     localStorage.setItem('registeredImages', JSON.stringify(updatedImages));
-    // Update state
     setImages(updatedImages);
   };
 
@@ -62,7 +58,7 @@ export default function Home() {
 
   const handleSwitchNetwork = async () => {
     try {
-      await switchToBnbTestnet();
+      await switchToBaseSepolia();
     } catch (error) {
       console.error('Error switching network:', error);
     }
@@ -70,140 +66,321 @@ export default function Home() {
 
   return (
     <Layout>
-      <div className="max-w-2xl mx-auto">
-        {/* Hero Section */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-3 bg-gradient-to-r from-[#00F5D4] to-[#00D4F5] text-transparent bg-clip-text">
-            Verify AI-Generated Images
-          </h1>
-          <p className="text-lg text-[#94A3B8] max-w-xl mx-auto">
-            Secure and transparent verification of AI-generated content on the blockchain
+      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 24px' }}>
+
+        {/* ── Hero ── */}
+        <div style={{ padding: '80px 0 64px', borderBottom: '1px solid var(--border)', position: 'relative' }}>
+          {/* Corner decorations */}
+          <div style={{ position: 'absolute', top: 24, right: 0, width: '120px', height: '80px', borderTop: '1px solid var(--border)', borderRight: '1px solid var(--border)', opacity: 0.4 }} />
+          <div style={{ position: 'absolute', bottom: 24, left: 0, width: '80px', height: '60px', borderBottom: '1px solid var(--border)', borderLeft: '1px solid var(--border)', opacity: 0.4 }} />
+
+          <p className="section-label" style={{ color: 'var(--accent)', marginBottom: '20px' }}>
+            &nbsp;AI Image Registry Protocol
           </p>
+
+          <h1 style={{
+            fontFamily: "'Rajdhani', sans-serif",
+            fontSize: 'clamp(48px, 8vw, 84px)',
+            fontWeight: 700,
+            lineHeight: '0.95',
+            color: 'var(--text-primary)',
+            letterSpacing: '0.02em',
+            margin: '0 0 24px 0',
+          }}>
+            VERIFY THE<br />
+            <span style={{
+              color: 'var(--accent)',
+              textShadow: '0 0 40px var(--accent-glow)',
+            }}>
+              ORIGIN
+            </span>{' '}
+            <span style={{ color: 'var(--text-secondary)' }}>OF<br />EVERY AI IMAGE.</span>
+          </h1>
+
+          <p style={{
+            fontSize: '15px',
+            color: 'var(--text-secondary)',
+            lineHeight: '1.7',
+            maxWidth: '420px',
+            margin: '0 0 36px',
+            fontFamily: "'Outfit', sans-serif",
+          }}>
+            Transparent, on-chain verification of AI-generated content.
+            Cryptographic fingerprints stored permanently on Base.
+          </p>
+
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            <Link href="/submit" style={{ textDecoration: 'none' }}>
+              <span className="btn-accent">+ Register Image</span>
+            </Link>
+            <Link href="/generate-ai-image" style={{ textDecoration: 'none' }}>
+              <span className="btn-accent" style={{ color: 'var(--cyan)', borderColor: 'var(--cyan)' }}>
+                ⚡ Generate
+              </span>
+            </Link>
+          </div>
+
+          {/* Stats row */}
+          <div style={{ display: 'flex', gap: '32px', marginTop: '48px', flexWrap: 'wrap' }}>
+            {[
+              { label: 'Registered', value: images.length },
+              { label: 'Flagged', value: highRiskImages.length },
+              { label: 'Chain', value: 'BASE-84532' },
+            ].map(({ label, value }) => (
+              <div key={label}>
+                <div style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1, letterSpacing: '0.04em' }}>
+                  {value}
+                </div>
+                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--text-muted)', marginTop: '4px' }}>
+                  {label}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Network Status */}
+        {/* ── Network status ── */}
         {isConnected && (
-          <div className="mb-6">
-            <div className="bg-[#1E293B] p-4 rounded-lg border border-[#334155]">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className={`w-3 h-3 rounded-full ${
-                    currentNetwork?.chainId === BigInt('0x61') 
-                      ? 'bg-green-500' 
-                      : 'bg-yellow-500'
-                  }`}></div>
-                  <span className="text-sm text-[#94A3B8]">
-                    {currentNetwork?.chainId === BigInt('0x61')
-                      ? 'Connected to BNB Smart Chain Testnet'
-                      : 'Wrong Network'}
-                  </span>
-                </div>
-                {currentNetwork?.chainId !== BigInt('0x61') && (
-                  <button
-                    onClick={handleSwitchNetwork}
-                    className="bg-[#00F5D4] text-[#0F172A] px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#00D4F5] transition-colors"
-                  >
-                    Switch to BNB Testnet
-                  </button>
-                )}
-              </div>
+          <div style={{
+            padding: '14px 0',
+            borderBottom: '1px solid var(--border)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span className={`status-dot ${currentNetwork?.chainId === BigInt('0x14A34') ? 'online' : 'warning'}`} />
+              <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>
+                {currentNetwork?.chainId === BigInt('0x14A34')
+                  ? 'CONNECTED · Base Sepolia'
+                  : 'WRONG NETWORK — Switch required'}
+              </span>
             </div>
+            {currentNetwork?.chainId !== BigInt('0x14A34') && (
+              <button onClick={handleSwitchNetwork} className="btn-accent" style={{ fontSize: '10px', padding: '5px 14px' }}>
+                Switch Network
+              </button>
+            )}
           </div>
         )}
 
-        {/* Search Section */}
-        <div className="mb-6">
-          <div className="relative">
-            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-              <svg className="w-4 h-4 text-[#94A3B8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
+        {/* ── Search ── */}
+        <div style={{ padding: '28px 0', borderBottom: '1px solid var(--border)' }}>
+          <div style={{ position: 'relative', maxWidth: '520px' }}>
+            <span style={{
+              position: 'absolute',
+              left: 0,
+              top: '50%',
+              transform: 'translateY(-55%)',
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: '14px',
+              color: 'var(--accent)',
+              userSelect: 'none',
+              pointerEvents: 'none',
+              opacity: 0.8,
+            }}>
+              ›
+            </span>
             <input
               type="text"
-              placeholder="Search by Image ID or AI Model..."
+              placeholder="search by image ID or model…"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-8 pr-4 py-2 bg-[#1E293B] border border-[#334155] rounded-lg focus:outline-none focus:border-[#00F5D4] text-[#F1F5F9] placeholder-[#94A3B8] text-sm"
+              className="search-input"
             />
           </div>
         </div>
 
-        {/* Error Messages */}
+        {/* ── Error ── */}
         {blockchainError && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-            <p className="text-red-400 text-sm">{blockchainError}</p>
+          <div style={{
+            margin: '28px 0 0',
+            padding: '12px 16px',
+            borderLeft: '2px solid var(--risk-high)',
+            backgroundColor: 'var(--risk-high-dim)',
+          }}>
+            <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--risk-high)', margin: 0 }}>
+              ERR: {blockchainError}
+            </p>
           </div>
         )}
 
-        {/* Medium/High-Risk Images Section */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-red-400">Medium/High-Risk Images (Blockchain Verified)</h2>
+        {/* ── Flagged images ── */}
+        <div style={{ padding: '48px 0', borderBottom: '1px solid var(--border)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', flexWrap: 'wrap', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <span className="badge badge-danger">Flagged</span>
+              <h2 style={{ fontSize: '22px', fontWeight: 600, color: 'var(--text-primary)', margin: 0, letterSpacing: '0.04em' }}>
+                HIGH-RISK BLOCKCHAIN RECORDS
+              </h2>
+            </div>
             {isLoading && (
-              <div className="flex items-center gap-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-400"></div>
-                <span className="text-sm text-[#94A3B8]">Loading...</span>
-              </div>
+              <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: 'var(--text-muted)' }}>
+                SCANNING…
+              </span>
             )}
           </div>
+
           {!isContractDeployed ? (
-            <div className="bg-[#1E293B] p-4 rounded-lg border border-red-500/20">
-              <p className="text-red-400 text-sm">Contract is not deployed. Please check your configuration.</p>
+            <div style={{ padding: '16px', borderLeft: '2px solid var(--risk-high)', backgroundColor: 'var(--risk-high-dim)' }}>
+              <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--risk-high)', margin: 0 }}>
+                CONTRACT_ERROR: Not deployed — check configuration.
+              </p>
             </div>
           ) : filteredHighRiskImages.length === 0 ? (
-            <div className="bg-[#1E293B] p-4 rounded-lg border border-[#334155]">
-              <p className="text-[#94A3B8] text-sm">No high-risk images found.</p>
+            <div style={{ padding: '48px 0', textAlign: 'center', border: '1px solid var(--border)', borderLeft: '2px solid var(--border)' }}>
+              <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--text-muted)', letterSpacing: '0.12em', margin: 0 }}>
+                // NO FLAGGED RECORDS FOUND
+              </p>
             </div>
           ) : (
-            <div className="grid gap-2">
-              {filteredHighRiskImages.map((image) => (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              {filteredHighRiskImages.map((image, i) => (
                 (() => { console.log('Blockchain image object:', image); return null; })(),
                 <div
                   key={image.ipfsHash}
-                  className="bg-[#1E293B] p-4 rounded-lg border border-red-500/20 hover:border-red-500/40 transition-all duration-300 transform hover:-translate-y-1"
+                  className="tech-card tech-card-danger"
+                  style={{ padding: '18px 22px', display: 'flex', gap: '18px', alignItems: 'flex-start', animationDelay: `${i * 0.04}s` }}
                 >
-                  <div className="flex items-center gap-4">
-                    {/* Image Preview */}
-                    <div className="w-[40px] h-[40px] relative flex-shrink-0">
-                      {(() => { console.log('ipfsHash for image:', image.ipfsHash); return null; })()}
-                      {image.ipfsHash && (image.ipfsHash.startsWith('Qm') || image.ipfsHash.startsWith('bafy')) ? (
-                        <img 
-                          src={`https://gateway.pinata.cloud/ipfs/${image.ipfsHash}`}
-                          alt={image.ipfsHash}
-                          className="w-full h-full object-contain rounded-lg border border-[#334155]"
-                        />
-                      ) : (
-                        <span className="text-xs text-[#94A3B8]">No image</span>
-                      )}
-                    </div>
-                    
-                    {/* Image Details */}
-                    <div className="flex-1">
-                      <div className="flex flex-col gap-2">
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-sm font-semibold text-red-400">Blockchain Verified</h3>
-                          <span className="px-2 py-1 rounded-full text-xs bg-red-500/20 text-red-400">
-                            High Risk
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <p className="text-[#94A3B8]">Generated with {image.modelUsed}</p>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[#94A3B8] text-xs">{image.timestamp}</span>
-                          </div>
-                        </div>
-                        {image.riskReasons && image.riskReasons.length > 0 && (
-                          <div className="mt-2">
-                            <p className="text-xs text-[#94A3B8]">Risk Reasons:</p>
-                            <ul className="list-disc list-inside text-xs text-red-400">
-                              {image.riskReasons.map((reason, index) => (
-                                <li key={index}>{reason}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
+                  <div style={{
+                    width: '54px',
+                    height: '54px',
+                    flexShrink: 0,
+                    border: '1px solid var(--risk-high)',
+                    overflow: 'hidden',
+                    backgroundColor: 'var(--bg-elevated)',
+                    boxShadow: '0 0 8px rgba(255,51,71,0.1)',
+                  }}>
+                    {image.ipfsHash && (image.ipfsHash.startsWith('Qm') || image.ipfsHash.startsWith('bafy')) ? (
+                      <img
+                        src={`https://gateway.pinata.cloud/ipfs/${image.ipfsHash}`}
+                        alt=""
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                      />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span style={{ fontSize: '9px', color: 'var(--text-muted)', fontFamily: "'JetBrains Mono', monospace" }}>NULL</span>
                       </div>
+                    )}
+                  </div>
+
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px', gap: '12px' }}>
+                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {image.ipfsHash?.substring(0, 38)}…
+                      </span>
+                      <span className="badge badge-danger" style={{ flexShrink: 0 }}>High Risk</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '24px', marginBottom: image.riskReasons?.length ? '8px' : 0 }}>
+                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: 'var(--text-muted)' }}>
+                        MODEL:{image.modelUsed}
+                      </span>
+                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: 'var(--text-muted)' }}>
+                        {image.timestamp}
+                      </span>
+                    </div>
+                    {image.riskReasons && image.riskReasons.length > 0 && (
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        {image.riskReasons.map((reason, j) => (
+                          <span key={j} style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '10px', color: 'var(--risk-high)', letterSpacing: '0.06em' }}>
+                            [{reason}]
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* ── Registered images ── */}
+        <div style={{ padding: '48px 0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', flexWrap: 'wrap', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <span className="badge badge-accent">Registry</span>
+              <h2 style={{ fontSize: '22px', fontWeight: 600, color: 'var(--text-primary)', margin: 0, letterSpacing: '0.04em' }}>
+                REGISTERED IMAGES
+              </h2>
+            </div>
+            <Link href="/submit" style={{ textDecoration: 'none' }}>
+              <span className="btn-accent" style={{ fontSize: '10px', padding: '6px 14px' }}>
+                + Register New
+              </span>
+            </Link>
+          </div>
+
+          {filteredImages.length === 0 ? (
+            <div style={{ padding: '64px 0', textAlign: 'center', border: '1px solid var(--border)', borderLeft: '2px solid var(--border)' }}>
+              <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--text-muted)', letterSpacing: '0.12em', margin: '0 0 24px' }}>
+                // REGISTRY EMPTY
+              </p>
+              <Link href="/submit" style={{ textDecoration: 'none' }}>
+                <span className="btn-accent">+ Register First Image</span>
+              </Link>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              {filteredImages.map((image, i) => (
+                <div
+                  key={image.id}
+                  className="tech-card"
+                  style={{ padding: '18px 22px', display: 'flex', gap: '18px', alignItems: 'flex-start', animationDelay: `${i * 0.04}s` }}
+                >
+                  {image.imageData && (
+                    <div style={{
+                      width: '54px',
+                      height: '54px',
+                      flexShrink: 0,
+                      border: '1px solid var(--accent)',
+                      overflow: 'hidden',
+                      backgroundColor: 'var(--bg-elevated)',
+                      boxShadow: '0 0 8px var(--accent-glow)',
+                    }}>
+                      <img
+                        src={image.imageData}
+                        alt=""
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                      />
+                    </div>
+                  )}
+
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px', gap: '12px' }}>
+                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {image.id?.substring(0, 38)}…
+                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+                        <span className={`badge ${image.status === 'Verified' ? 'badge-success' : 'badge-warning'}`}>
+                          {image.status}
+                        </span>
+                        <button
+                          onClick={() => handleDelete(image.id)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: 'var(--text-muted)',
+                            padding: '0',
+                            fontSize: '16px',
+                            lineHeight: 1,
+                            fontFamily: 'monospace',
+                            transition: 'color 0.15s',
+                          }}
+                          title="Remove"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '24px' }}>
+                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: 'var(--text-muted)' }}>
+                        MODEL:{image.model}
+                      </span>
+                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: 'var(--text-muted)' }}>
+                        {image.date}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -212,90 +389,7 @@ export default function Home() {
           )}
         </div>
 
-        {/* Regular Images Section */}
-        <div>
-          <h2 className="text-xl font-bold mb-4 text-[#00F5D4]">Registered Images</h2>
-          <div className="grid gap-2">
-            {filteredImages.map((image) => (
-              <div
-                key={image.id}
-                className="bg-[#1E293B] p-4 rounded-lg border border-[#334155] hover:border-[#00F5D4] transition-all duration-300 transform hover:-translate-y-1"
-              >
-                <div className="flex items-center gap-4">
-                  {/* Small Image Preview */}
-                  {image.imageData && (
-                    <div className="w-[40px] h-[40px] relative flex-shrink-0">
-                      <img 
-                        src={image.imageData} 
-                        alt={image.id} 
-                        className="w-full h-full object-contain rounded-lg border border-[#334155]"
-                      />
-                    </div>
-                  )}
-                  
-                  {/* Image Details */}
-                  <div className="flex-1">
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-semibold text-[#00F5D4]">{image.id}</h3>
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          image.status === 'Verified' 
-                            ? 'bg-green-500/20 text-green-400'
-                            : 'bg-yellow-500/20 text-yellow-400'
-                        }`}>
-                          {image.status}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <p className="text-[#94A3B8]">Generated with {image.model}</p>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[#94A3B8] text-xs">{image.date}</span>
-                          <button
-                            onClick={() => handleDelete(image.id)}
-                            className="text-red-500 hover:text-red-400 transition-colors bg-red-500/10 p-1 rounded-full"
-                          >
-                            <svg 
-                              xmlns="http://www.w3.org/2000/svg" 
-                              className="h-5 w-5" 
-                              fill="none" 
-                              viewBox="0 0 24 24" 
-                              stroke="currentColor"
-                            >
-                              <path 
-                                strokeLinecap="round" 
-                                strokeLinejoin="round" 
-                                strokeWidth={2} 
-                                d="M6 18L18 6M6 6l12 12" 
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* CTA Section */}
-        <div className="mt-6 text-center">
-          <Link href="/submit">
-            <button className="bg-gradient-to-r from-[#00F5D4] to-[#00D4F5] text-[#0F172A] px-4 py-2 rounded-lg font-medium hover:shadow-lg hover:scale-105 transition-all duration-200 flex items-center gap-2 group inline-flex">
-              <span>Register New Image</span>
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                className="h-4 w-4 transform group-hover:rotate-90 transition-transform duration-200" 
-                viewBox="0 0 20 20" 
-                fill="currentColor"
-              >
-                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-              </svg>
-            </button>
-          </Link>
-        </div>
       </div>
     </Layout>
   );
-} 
+}
