@@ -7,6 +7,7 @@ const NAV = [
   { href: '/submit', label: 'Register' },
   { href: '/generate-ai-image', label: 'Generate' },
   { href: '/about', label: 'About' },
+  { href: '/docs', label: 'API Docs' },
 ];
 
 export default function Layout({ children }) {
