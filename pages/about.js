@@ -10,7 +10,7 @@ const STEPS = [
   {
     n: '02',
     title: 'UNIQUE IMAGE ID IS GENERATED',
-    body: 'ZorAi automatically generates a unique cryptographic ID using SHA256 hashing. The ID is derived from the prompt, timestamp, and model — creating a reliable fingerprint of the image\'s origin.',
+    body: 'ZorAi automatically generates a unique cryptographic ID using SHA256 hashing. The ID is derived from the prompt, timestamp, and model, creating a reliable fingerprint of the image\'s origin.',
   },
   {
     n: '03',
@@ -26,7 +26,7 @@ const STEPS = [
   {
     n: '05',
     title: 'ANYONE CAN VERIFY IT',
-    body: 'Users can input an image ID to verify whether it has been registered, when it was created, and which model generated it — all from a trustless, decentralized source.',
+    body: 'Users can input an image ID to verify whether it has been registered, when it was created, and which model generated it, all from a trustless, decentralized source.',
   },
 ];
 
@@ -62,7 +62,7 @@ export default function About() {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
               {[
-                'ZorAi is a decentralized application designed to verify and register AI-generated image IDs on the blockchain. Our platform brings transparency, traceability, and trust to the world of generative AI by allowing anyone to check whether a visual asset was created by artificial intelligence — and if so, when, how, and by whom.',
+                'ZorAi is a decentralized application designed to verify and register AI-generated image IDs on the blockchain. Our platform brings transparency, traceability, and trust to the world of generative AI by allowing anyone to check whether a visual asset was created by artificial intelligence, and if so, when, how, and by whom.',
                 'In a digital era where misinformation spreads fast and AI-generated visuals are increasingly indistinguishable from real ones, ZorAi serves as a trust layer, enabling creators, platforms, and users to authenticate the origin of AI-generated content through a public, immutable record.',
                 'ZorAi is built for developers, creators, journalists, and platforms who believe in the importance of accountability and digital integrity in the age of artificial intelligence.',
               ].map((text, i) => (
