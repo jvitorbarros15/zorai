@@ -230,7 +230,7 @@ export default function Home() {
           ) : filteredHighRiskImages.length === 0 ? (
             <div style={{ padding: '48px 0', textAlign: 'center', border: '1px solid var(--border)', borderLeft: '2px solid var(--border)' }}>
               <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--text-muted)', letterSpacing: '0.12em', margin: 0 }}>
-                // NO FLAGGED RECORDS FOUND
+                {/* NO FLAGGED RECORDS FOUND */}
               </p>
             </div>
           ) : (
@@ -314,7 +314,7 @@ export default function Home() {
           {filteredImages.length === 0 ? (
             <div style={{ padding: '64px 0', textAlign: 'center', border: '1px solid var(--border)', borderLeft: '2px solid var(--border)' }}>
               <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--text-muted)', letterSpacing: '0.12em', margin: '0 0 24px' }}>
-                // REGISTRY EMPTY
+                {/* REGISTRY EMPTY */}
               </p>
               <Link href="/submit" style={{ textDecoration: 'none' }}>
                 <span className="btn-accent">+ Register First Image</span>
