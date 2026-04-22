@@ -10,58 +10,61 @@ const endpoints = [
     summary:
       'Register AI-generated content on ZorAI and receive a blockchain-backed watermark plus a metadata template you can embed before distribution.',
     body: [
-      ['imageHash', 'string', 'required', 'SHA-256 hash of the generated asset'],
+      ['imageHash', 'string', 'required', 'SHA-256 hash of the generated asset (hex string, 64 chars)'],
       ['modelUsed', 'string', 'required', 'Model identifier such as "gpt-image-1" or "sdxl"'],
-      ['ipfsHash', 'string', 'required', 'CID or immutable storage pointer recorded on-chain'],
-      ['company', 'string', 'optional', 'Publisher name for metadata'],
-      ['externalId', 'string', 'optional', 'Your internal generation or asset id'],
-      ['sourceUrl', 'string', 'optional', 'Canonical URL where the asset is served'],
-      ['contentType', 'string', 'optional', 'Defaults to "image"'],
-      ['riskLevel', 'number', 'optional', '0 = low, 1 = medium, 2 = high'],
-      ['riskReasons', 'string[]', 'optional', 'Policy or moderation flags'],
+      ['ipfsHash', 'string', 'required', 'IPFS CID or immutable storage pointer (recorded on-chain)'],
+      ['company', 'string', 'optional', 'Publisher name for metadata and on-chain record'],
+      ['externalId', 'string', 'optional', 'Your internal generation or asset tracking ID'],
+      ['sourceUrl', 'string', 'optional', 'Canonical URL where the asset will be served'],
+      ['contentType', 'string', 'optional', 'Asset type (defaults to "image")'],
+      ['riskLevel', 'number', 'optional', '0 = low, 1 = medium, 2 = high. Defaults to 0'],
+      ['riskReasons', 'string[]', 'optional', 'Array of policy or moderation flags'],
     ],
     request: `curl -X POST ${BASE_URL}/api/register \\
   -H "Content-Type: application/json" \\
   -H "x-api-key: YOUR_API_KEY" \\
   -d '{
-    "imageHash": "8f9d...c1a2",
+    "imageHash": "8f9d2f1e...",
     "modelUsed": "gpt-image-1",
-    "ipfsHash": "bafybeigdyr...",
+    "ipfsHash": "bafybeiexample...",
     "company": "Example AI",
-    "externalId": "gen_42",
-    "sourceUrl": "https://cdn.example.ai/assets/gen_42.png",
+    "externalId": "gen_12345",
+    "sourceUrl": "https://cdn.example.ai/assets/gen_12345.png",
     "riskLevel": 0,
     "riskReasons": []
   }'`,
-    response: `{
+    response: `HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
   "success": true,
-  "imageId": "8f9d...c1a2",
-  "txHash": "0x8b2d...",
+  "imageId": "8f9d2f1e...",
+  "txHash": "0x8b2d4f...",
   "blockNumber": 23812345,
   "chain": "base-sepolia",
   "chainId": 84532,
-  "contract": "0x...",
+  "contract": "0x74109...",
   "watermark": {
     "version": "1.0",
     "zorai": true,
-    "imageHash": "8f9d...c1a2",
+    "imageHash": "8f9d2f1e...",
     "model": "gpt-image-1",
     "registeredAt": "2026-04-21T23:12:10.000Z",
     "chain": "base-sepolia",
     "chainId": 84532,
-    "contract": "0x...",
-    "txHash": "0x8b2d...",
+    "contract": "0x74109...",
+    "txHash": "0x8b2d4f...",
     "blockNumber": 23812345
   },
   "watermarkHash": "eb02...",
   "metadataTemplate": {
     "aiGenerated": true,
     "zorai": {
-      "watermark": { "...": "..." },
+      "watermark": { "version": "1.0", "zorai": true },
       "watermarkHash": "eb02..."
     },
     "xmpFields": {
-      "XMP:ZorAI": "{...}",
+      "XMP:ZorAI": "...full watermark...",
       "XMP:ZorAIHash": "eb02...",
       "XMP:AIGenerated": "true"
     }
@@ -73,16 +76,19 @@ const endpoints = [
     path: '/api/verify?id={imageHash}',
     audience: 'Social, news, fact-checkers',
     summary:
-      'Look up an asset by SHA-256 hash and retrieve the blockchain registration record.',
-    params: [['id', 'string', 'required', 'SHA-256 hash of the image or asset to check']],
-    request: `curl "${BASE_URL}/api/verify?id=8f9d...c1a2"`,
-    response: `{
-  "isAiGenerated": true,
+      'Look up an asset by SHA-256 hash and retrieve the blockchain registration record. Public endpoint, no API key required.',
+    params: [['id', 'string', 'required', 'SHA-256 hash of the image or asset to check (hex string, 64 chars)']],
+    request: `curl "${BASE_URL}/api/verify?id=8f9d2f1e..."`,
+    response: `HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
   "found": true,
-  "imageId": "8f9d...c1a2",
-  "ipfsHash": "bafybeigdyr...",
+  "isAiGenerated": true,
+  "imageId": "8f9d2f1e...",
+  "ipfsHash": "bafybeiexample...",
   "modelUsed": "gpt-image-1",
-  "creator": "0xAbC...",
+  "creator": "0xAbC123...",
   "registeredAt": "2026-04-21T23:12:10.000Z",
   "isVerified": false,
   "riskLevel": "low",
@@ -98,35 +104,37 @@ const endpoints = [
     path: '/api/verify',
     audience: 'Platforms with metadata',
     summary:
-      'Verify a hash and optionally compare embedded ZorAI watermark metadata against the blockchain record.',
+      'Verify a hash and optionally compare embedded ZorAI watermark metadata against the blockchain record. Public endpoint, no API key required.',
     body: [
-      ['imageHash', 'string', 'required', 'SHA-256 hash of the asset being inspected'],
-      ['watermark', 'object', 'optional', 'Embedded ZorAI watermark object extracted from metadata'],
-      ['watermarkHash', 'string', 'optional', 'Embedded ZorAI watermark hash'],
+      ['imageHash', 'string', 'required', 'SHA-256 hash of the asset being inspected (hex string, 64 chars)'],
+      ['watermark', 'object', 'optional', 'Full watermark object extracted from file metadata. If provided, will be compared against blockchain.'],
+      ['watermarkHash', 'string', 'optional', 'Embedded watermark hash to compare (alternative to full watermark object)'],
     ],
     request: `curl -X POST ${BASE_URL}/api/verify \\
   -H "Content-Type: application/json" \\
   -d '{
-    "imageHash": "8f9d...c1a2",
+    "imageHash": "8f9d2f1e...",
     "watermark": {
       "version": "1.0",
       "zorai": true,
-      "imageHash": "8f9d...c1a2",
+      "imageHash": "8f9d2f1e...",
       "model": "gpt-image-1",
       "registeredAt": "2026-04-21T23:12:10.000Z",
       "chain": "base-sepolia",
       "chainId": 84532,
-      "contract": "0x...",
-      "txHash": "0x8b2d...",
+      "contract": "0x74109...",
+      "txHash": "0x8b2d4f...",
       "blockNumber": 23812345
     }
   }'`,
-    response: `{
-  "isAiGenerated": true,
+    response: `HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
   "found": true,
-  "imageId": "8f9d...c1a2",
+  "isAiGenerated": true,
+  "imageId": "8f9d2f1e...",
   "watermark": {
-    "onChain": { "...": "..." },
     "onChainHash": "eb02...",
     "suppliedHash": "eb02...",
     "matchesBlockchain": true
@@ -155,26 +163,31 @@ def sha256_file(path: str) -> str:
 
 image_hash = sha256_file("output.png")
 
-register_response = requests.post(
-    f"{BASE_URL}/api/register",
-    headers={
-        "Content-Type": "application/json",
-        "x-api-key": API_KEY,
-    },
-    json={
-        "imageHash": image_hash,
-        "modelUsed": "gpt-image-1",
-        "ipfsHash": "bafybeigdyr...",
-        "company": "Example AI",
-        "externalId": "gen_42",
-    },
-)
-payload = register_response.json()
+try:
+    response = requests.post(
+        f"{BASE_URL}/api/register",
+        headers={
+            "Content-Type": "application/json",
+            "x-api-key": API_KEY,
+        },
+        json={
+            "imageHash": image_hash,
+            "modelUsed": "gpt-image-1",
+            "ipfsHash": "bafybeigdyrexample...",
+            "company": "Example AI",
+            "externalId": "gen_12345",
+        },
+        timeout=30,
+    )
+    response.raise_for_status()
+    payload = response.json()
 
-print(payload["txHash"])
-print(json.dumps(payload["metadataTemplate"], indent=2))`;
+    print(f"Transaction: {payload['txHash']}")
+    print(json.dumps(payload["metadataTemplate"], indent=2))
+except requests.exceptions.RequestException as e:
+    print(f"Error: {e}")`;
 
-const fastApiExample = `from fastapi import FastAPI
+const fastApiExample = `from fastapi import FastAPI, HTTPException
 import hashlib
 import requests
 
@@ -189,19 +202,25 @@ def sha256_bytes(content: bytes) -> str:
 async def publish_generated_image(file_bytes: bytes):
     image_hash = sha256_bytes(file_bytes)
 
-    response = requests.post(
-        f"{ZORAI_BASE_URL}/api/register",
-        headers={"x-api-key": ZORAI_API_KEY},
-        json={
-            "imageHash": image_hash,
-            "modelUsed": "gpt-image-1",
-            "ipfsHash": "bafybeigdyr...",
-            "company": "Example AI",
-        },
-        timeout=30,
-    )
-
-    return response.json()`;
+    try:
+        response = requests.post(
+            f"{ZORAI_BASE_URL}/api/register",
+            headers={
+                "Content-Type": "application/json",
+                "x-api-key": ZORAI_API_KEY,
+            },
+            json={
+                "imageHash": image_hash,
+                "modelUsed": "gpt-image-1",
+                "ipfsHash": "bafybeigdyrexample...",
+                "company": "Example AI",
+            },
+            timeout=30,
+        )
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(status_code=502, detail=str(e))`;
 
 const verifyExample = `async function verifyUpload(imageHash, extractedWatermark) {
   const res = await fetch("https://zorai.vercel.app/api/verify", {
@@ -521,6 +540,44 @@ export default function DocsPage() {
             body="Registration is authenticated because it writes to the blockchain through your platform signer. Verification is public so downstream platforms can query provenance without a wallet or an API key."
           />
           <CodeBlock code={'x-api-key: YOUR_API_KEY'} />
+        </section>
+
+        <section style={{ padding: '52px 0', borderBottom: '1px solid var(--border)' }}>
+          <SectionTitle
+            label="HTTP Status Codes"
+            title="EXPECTED RESPONSES"
+            body="All endpoints return JSON responses. Status codes indicate success or failure. Always check the status code before parsing the response body."
+          />
+          <div style={{ display: 'grid', gap: '14px' }}>
+            {[
+              ['200', 'Success', 'Request succeeded (most common response)'],
+              ['201', 'Created', 'Resource created (registration successful)'],
+              ['400', 'Bad Request', 'Invalid parameters, missing fields, or malformed JSON'],
+              ['401', 'Unauthorized', 'Missing or invalid API key (POST /api/register only)'],
+              ['429', 'Too Many Requests', 'Rate limit exceeded. Retry after 60 seconds'],
+              ['500', 'Server Error', 'Internal server error. Check status page or retry later'],
+            ].map(([code, title, desc]) => (
+              <div key={code} className="tech-card" style={{ padding: '18px 22px' }}>
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                  <span
+                    style={{
+                      fontFamily: "'JetBrains Mono', monospace",
+                      fontSize: '14px',
+                      fontWeight: 'bold',
+                      color: code.startsWith('2') ? 'var(--text-primary)' : 'var(--risk-medium)',
+                      minWidth: '50px',
+                    }}
+                  >
+                    {code}
+                  </span>
+                  <div>
+                    <p style={{ margin: '0 0 4px', color: 'var(--text-primary)', fontWeight: '500' }}>{title}</p>
+                    <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '14px' }}>{desc}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
 
         <section style={{ padding: '52px 0', borderBottom: '1px solid var(--border)' }}>
