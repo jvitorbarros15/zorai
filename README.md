@@ -1,147 +1,199 @@
-# ZorAi - Decentralized AI Image Verification
+# ZorAi
 
-ZorAi is a decentralized application that verifies and registers AI-generated image IDs on the blockchain, integrating with IPFS for metadata storage and optionally with ChatGPT for prompt generation.
+ZorAi is a decentralized AI image verification application. It creates a verifiable record for AI-generated images by combining content metadata, IPFS storage, and an on-chain registry deployed on Base Sepolia.
 
-## 🎯 Objective
+The application is built with Next.js, React, Tailwind CSS, Solidity, Hardhat, and ethers.js.
 
-Build a decentralized application (dApp) that:
-- Connects to the ChatGPT API (or accepts user prompts)
-- Generates a unique image ID (SHA256 hash of prompt + timestamp + model)
-- Uploads metadata to IPFS via Pinata Cloud
-- Stores image verification data on the Polygon blockchain
-- Provides a public frontend for users to submit and verify image IDs
+## Overview
 
-## 🚀 Features
+ZorAi helps users register and verify AI-generated image identifiers. Each registration can include an image hash, the AI model used, an IPFS metadata reference, a verification status, and risk assessment information.
 
-- **Blockchain Integration**: Register and verify AI-generated images on Polygon
-- **IPFS Storage**: Secure metadata storage via Pinata Cloud
-- **Modern UI**: Clean, minimalist design with dark theme
-- **Wallet Integration**: Seamless MetaMask connection
-- **ChatGPT Integration**: Optional AI-powered prompt generation
-- **Responsive Design**: Works across all devices
+The registry contract provides a public source of truth for image provenance data. The frontend and API routes interact with the contract to submit new records and verify existing ones.
 
-## 🛠️ Tech Stack
+## Features
 
-- **Frontend**: Next.js, React, TypeScript
+- Register AI-generated image records on Base Sepolia.
+- Verify whether an image hash has already been registered.
+- Store metadata references using IPFS CIDs.
+- Track the AI model associated with each image record.
+- Include risk level and risk reason metadata.
+- Connect with browser wallets such as MetaMask.
+- Provide API routes for registration and verification workflows.
+
+## Tech Stack
+
+- **Frontend**: Next.js, React
 - **Styling**: Tailwind CSS
-- **Blockchain**: Solidity, ethers.js, MetaMask
-- **Storage**: IPFS (Pinata Cloud)
-- **AI**: OpenAI GPT API (optional)
-- **Fonts**: Space Grotesk / Sora
+- **Smart Contracts**: Solidity
+- **Blockchain Tooling**: Hardhat, ethers.js
+- **Network**: Base Sepolia
+- **Storage**: IPFS through Pinata
+- **Wallet Support**: MetaMask and EVM-compatible wallets
 
-## 🔧 Smart Contract
+## Smart Contract
 
-### Storage
-- `string imageId`
-- `string modelUsed`
-- `string ipfsHash`
-- `uint256 timestamp`
+The deployed registry contract is `ZorAiRegistry`.
 
-### Functions
-- `registerImage(string memory imageId, string memory modelUsed, string memory ipfsHash)`
-- `getImageData(string memory imageId) returns (address creator, string memory modelUsed, string memory ipfsHash, uint256 timestamp)`
+### Base Sepolia Deployment
 
-## 📦 IPFS Metadata Format
+| Field | Value |
+| --- | --- |
+| Network | Base Sepolia |
+| Chain ID | `84532` |
+| Contract Address | `0xd11eAEA00A92E6eE97DD14e6F97dbBb7971ef549` |
+| Explorer | https://sepolia.basescan.org/address/0xd11eAEA00A92E6eE97DD14e6F97dbBb7971ef549 |
+
+### Core Methods
+
+```solidity
+registerImage(
+  string memory imageId,
+  string memory modelUsed,
+  string memory ipfsHash,
+  RiskLevel riskLevel,
+  string[] memory riskReasons
+)
+```
+
+Registers a new image record on-chain.
+
+```solidity
+getImageData(string memory imageId)
+```
+
+Returns the stored metadata for a registered image.
+
+```solidity
+isImageRegistered(string memory imageId)
+```
+
+Returns whether an image ID already exists in the registry.
+
+## Metadata Format
+
+Image metadata can be stored on IPFS using a JSON structure similar to:
+
 ```json
 {
   "imageId": "sha256 hash string",
   "modelUsed": "AI model name",
-  "timestamp": "unix timestamp",
-  "riskCategory": "optional risk label"
+  "timestamp": "ISO timestamp or Unix timestamp",
+  "riskCategory": "low | medium | high",
+  "riskReasons": ["reason one", "reason two"]
 }
 ```
 
-## 🎨 Design System
+## Environment Variables
 
-- **Background**: `#0F172A`
-- **Text**: `#F1F5F9`
-- **Accent**: `#00F5D4`
-- **Font**: Space Grotesk / Sora
+Create a local `.env` file for development and contract deployment.
 
-## 📋 Project Checklist
-
-### Smart Contract Development
-- [ ] Write Solidity smart contract
-- [ ] Add image registration function
-- [ ] Add data retrieval function
-- [ ] Deploy to Polygon Mumbai testnet
-- [ ] Deploy to Polygon Mainnet
-- [ ] Generate and export ABI
-
-### IPFS Integration
-- [ ] Set up Pinata Cloud SDK
-- [ ] Implement metadata JSON creation
-- [ ] Add IPFS upload functionality
-- [ ] Handle CID storage and retrieval
-- [ ] Implement gateway-based content fetching
-
-### Frontend Development
-- [x] Initialize Next.js project with TypeScript
-- [x] Install and configure Tailwind CSS
-- [x] Set up project structure
-- [x] Configure fonts and theme
-- [x] Create WalletContext for MetaMask
-- [x] Implement basic UI components
-
-### Pages
-- [x] Home/Dashboard
-  - [x] Search bar for image ID
-  - [x] Display verified images
-  - [x] Navigation setup
-- [x] Submit Page
-  - [x] Image ID input
-  - [x] AI model selection
-  - [ ] ChatGPT prompt generation
-  - [ ] IPFS metadata upload
-  - [ ] Blockchain registration
-- [x] About Page
-  - [x] Project explanation
-  - [x] Connect Wallet integration
-  - [ ] Technical documentation
-
-### ChatGPT Integration
-- [ ] Set up OpenAI API connection
-- [ ] Add prompt generation UI
-- [ ] Implement error handling
-- [ ] Add rate limiting
-- [ ] Store API keys securely
-
-### Security & DevOps
-- [ ] Secure environment variable handling
-- [ ] Implement API routes for key operations
-- [ ] Add error boundaries
-- [ ] Set up CI/CD pipeline
-- [ ] Create deployment documentation
-
-## 📁 Project Structure
+```bash
+PRIVATE_KEY=0xYOUR_DEPLOYER_PRIVATE_KEY
+NEXT_PUBLIC_CONTRACT_ADDRESS=0xd11eAEA00A92E6eE97DD14e6F97dbBb7971ef549
+ZORAI_SIGNER_PRIVATE_KEY=0xYOUR_SERVER_SIGNER_PRIVATE_KEY
+ZORAI_RPC_URL=https://sepolia.base.org
+ZORAI_API_KEY=your_api_key
 ```
+
+`PRIVATE_KEY` is used by Hardhat deployment scripts. `ZORAI_SIGNER_PRIVATE_KEY` is used by server-side API routes that write to the contract. Do not expose private keys in client-side environment variables or commit them to git.
+
+## Local Development
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+Run the Hardhat compiler:
+
+```bash
+npx hardhat compile
+```
+
+Deploy the contract to Base Sepolia:
+
+```bash
+npx hardhat run scripts/deploy.js --network baseSepolia
+```
+
+## Project Structure
+
+```text
 zorai-app/
-├── components/         # Reusable UI components
-├── contexts/          # React contexts (wallet, etc.)
-├── contracts/         # Solidity smart contracts
-├── hooks/            # Custom React hooks
-├── pages/            # Next.js pages
-├── public/           # Static assets
-├── styles/           # Global styles
-├── types/            # TypeScript definitions
-└── utils/            # Helper functions
+├── components/          Reusable React components
+├── contexts/            React context providers
+├── contracts/           Solidity contract and ABI files
+├── lib/                 Blockchain and registry helpers
+├── pages/               Next.js pages and API routes
+├── public/              Static assets
+├── scripts/             Hardhat deployment scripts
+├── styles/              Global styles
+├── hardhat.config.js    Hardhat network configuration
+└── package.json         Project scripts and dependencies
 ```
 
-## 🔐 Security Notes
+## API Routes
 
-- Store API keys in `.env.local`
-- Use Next.js API routes for sensitive operations
-- Implement proper error handling
-- Follow blockchain security best practices
+The app includes server-side API routes for verification and registration.
 
-## 🚀 Deployment
+### Register
 
-1. Deploy smart contracts to Polygon network
-2. Set up Pinata Cloud account and API keys
-3. Configure environment variables
-4. Deploy frontend to Vercel or similar
-5. Test end-to-end functionality
+```http
+POST /api/register
+```
 
-## 📜 License
+Registers an image record using the configured server-side signer.
+
+Required headers:
+
+```http
+x-api-key: your_api_key
+```
+
+Required body fields:
+
+```json
+{
+  "imageHash": "sha256 hash string",
+  "modelUsed": "AI model name",
+  "ipfsHash": "IPFS CID"
+}
+```
+
+Optional body fields include `riskLevel`, `riskReasons`, `company`, `externalId`, `sourceUrl`, and `contentType`.
+
+### Verify
+
+```http
+GET /api/verify
+```
+
+Looks up an image record from the deployed registry contract.
+
+## Deployment
+
+1. Configure production environment variables in the hosting provider.
+2. Set `NEXT_PUBLIC_CONTRACT_ADDRESS` to the deployed Base Sepolia contract address.
+3. Set `ZORAI_SIGNER_PRIVATE_KEY` only if server-side registration is required.
+4. Configure Pinata and any AI provider credentials needed by the application.
+5. Deploy the Next.js application to Vercel or another Node-compatible hosting provider.
+6. Test registration and verification against Base Sepolia.
+
+## Security Notes
+
+- Never commit `.env`, private keys, API keys, or seed phrases.
+- Use a dedicated test wallet for Base Sepolia deployments.
+- Keep server-side signing keys out of frontend code.
+- Rotate keys if they are exposed in screenshots, logs, or chat.
+- Use Base Sepolia test ETH only for testnet transactions.
+
+## License
 
 MIT
