@@ -142,7 +142,7 @@ export default function Layout({ children }) {
                 <a href="https://github.com/jvitorbarros15/zorai" target="_blank" rel="noopener noreferrer" className="footer-link">
                   GitHub Repository ↗
                 </a>
-                <a href="https://testnet.bscscan.com/address/0x47adc07617d59984ea5da9d59d3f3a0882737556" target="_blank" rel="noopener noreferrer" className="footer-link">
+                <a href="https://sepolia.basescan.org/address/0xd11eAEA00A92E6eE97DD14e6F97dbBb7971ef549" target="_blank" rel="noopener noreferrer" className="footer-link">
                   Smart Contract ↗
                 </a>
               </div>

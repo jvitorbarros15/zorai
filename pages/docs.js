@@ -43,7 +43,7 @@ Content-Type: application/json
   "blockNumber": 23812345,
   "chain": "base-sepolia",
   "chainId": 84532,
-  "contract": "0x74109...",
+  "contract": "0xd11eAEA00A92E6eE97DD14e6F97dbBb7971ef549",
   "watermark": {
     "version": "1.0",
     "zorai": true,
@@ -52,7 +52,7 @@ Content-Type: application/json
     "registeredAt": "2026-04-21T23:12:10.000Z",
     "chain": "base-sepolia",
     "chainId": 84532,
-    "contract": "0x74109...",
+    "contract": "0xd11eAEA00A92E6eE97DD14e6F97dbBb7971ef549",
     "txHash": "0x8b2d4f...",
     "blockNumber": 23812345
   },
@@ -122,7 +122,7 @@ Content-Type: application/json
       "registeredAt": "2026-04-21T23:12:10.000Z",
       "chain": "base-sepolia",
       "chainId": 84532,
-      "contract": "0x74109...",
+      "contract": "0xd11eAEA00A92E6eE97DD14e6F97dbBb7971ef549",
       "txHash": "0x8b2d4f...",
       "blockNumber": 23812345
     }
@@ -595,7 +595,7 @@ export default function DocsPage() {
   "registeredAt": "2026-04-21T23:12:10.000Z",
   "chain": "base-sepolia",
   "chainId": 84532,
-  "contract": "0x...",
+  "contract": "0xd11eAEA00A92E6eE97DD14e6F97dbBb7971ef549",
   "txHash": "0x8b2d...",
   "blockNumber": 23812345
 }`}
