@@ -1,5 +1,6 @@
 import { WalletProvider } from '../contexts/WalletContext';
 import { BlockchainProvider } from '../contexts/BlockchainContext';
+import { Analytics } from '@vercel/analytics/next';
 import '../styles/globals.css';
 
 function MyApp({ Component, pageProps }) {
@@ -7,6 +8,7 @@ function MyApp({ Component, pageProps }) {
     <WalletProvider>
       <BlockchainProvider>
         <Component {...pageProps} />
+        <Analytics />
       </BlockchainProvider>
     </WalletProvider>
   );
