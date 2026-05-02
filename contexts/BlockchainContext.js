@@ -67,11 +67,7 @@ export function BlockchainProvider({ children }) {
       let provider;
       if (typeof window.ethereum !== 'undefined') {
         // Use MetaMask if available
-        provider = new ethers.BrowserProvider(window.ethereum, {
-          name: 'base-sepolia',
-          chainId: 84532,
-          ensAddress: null
-        });
+        provider = new ethers.BrowserProvider(window.ethereum);
         // Get the network from MetaMask for UI status
         const network = await provider.getNetwork();
         setCurrentNetwork(network);
@@ -99,7 +95,11 @@ export function BlockchainProvider({ children }) {
 
       const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
       if (!contractAddress) {
-        throw new Error('Contract address not found in environment variables');
+        throw new Error('NEXT_PUBLIC_CONTRACT_ADDRESS is missing. Copy .env.local.example to .env.local, then restart the dev server.');
+      }
+
+      if (!ethers.isAddress(contractAddress)) {
+        throw new Error('NEXT_PUBLIC_CONTRACT_ADDRESS is not a valid EVM address.');
       }
 
       // Check if contract is deployed
