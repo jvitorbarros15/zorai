@@ -74,18 +74,10 @@ export function BlockchainProvider({ children }) {
         // Check if we're on Base Sepolia (chain ID 84532)
         const chainId = Number(network.chainId) || Number(window.ethereum.chainId);
         if (chainId !== 84532) {
-          // Prompt user to switch network
-          try {
-            await switchToBaseSepolia();
-            // After switching, reload to re-init contract
-            window.location.reload();
-            return;
-          } catch (switchErr) {
-            setError('Please switch to Base Sepolia in MetaMask to use this app.');
-            setIsContractDeployed(false);
-            setIsLoading(false);
-            return;
-          }
+          setError('Wrong network. Switch to Base Sepolia to use blockchain records.');
+          setIsContractDeployed(false);
+          setIsLoading(false);
+          return;
         }
       } else {
         // Fallback to public read-only provider for Base Sepolia
