@@ -46,3 +46,9 @@ next-env.d.ts
 # IDE
 .idea
 .vscode
+
+# planning docs — never commit
+docs/superpowers/
+*Overview.md
+*-design.md
+*-plan.md

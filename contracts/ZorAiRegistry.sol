@@ -2,6 +2,39 @@
 pragma solidity ^0.8.0;
 
 contract ZorAiRegistry {
+    // Access control
+    address public owner;
+    mapping(address => bool) public authorizedIssuers;
+
+    event IssuerAdded(address indexed issuer);
+    event IssuerRemoved(address indexed issuer);
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not owner");
+        _;
+    }
+
+    modifier onlyIssuer() {
+        require(authorizedIssuers[msg.sender], "Not authorized issuer");
+        _;
+    }
+
+    constructor() {
+        owner = msg.sender;
+        authorizedIssuers[msg.sender] = true;
+        emit IssuerAdded(msg.sender);
+    }
+
+    function addIssuer(address issuer) public onlyOwner {
+        authorizedIssuers[issuer] = true;
+        emit IssuerAdded(issuer);
+    }
+
+    function removeIssuer(address issuer) public onlyOwner {
+        authorizedIssuers[issuer] = false;
+        emit IssuerRemoved(issuer);
+    }
+
     // Risk levels
     enum RiskLevel { LOW, MEDIUM, HIGH }
     
@@ -48,7 +81,7 @@ contract ZorAiRegistry {
         string memory ipfsHash,
         RiskLevel riskLevel,
         string[] memory riskReasons
-    ) public {
+    ) public onlyIssuer {
         require(bytes(imageId).length > 0, "Image ID cannot be empty");
         require(bytes(ipfsHash).length > 0, "IPFS hash cannot be empty");
         require(bytes(modelUsed).length > 0, "Model used cannot be empty");
@@ -115,7 +148,7 @@ contract ZorAiRegistry {
         bool isVerified,
         RiskLevel riskLevel,
         string[] memory riskReasons
-    ) public {
+    ) public onlyIssuer {
         require(bytes(imageId).length > 0, "Image ID cannot be empty");
         require(images[imageId].creator != address(0), "Image not found");
 
