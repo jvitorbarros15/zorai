@@ -6,6 +6,9 @@ import { useWallet } from '../contexts/WalletContext';
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [verifyHash, setVerifyHash] = useState('');
+  const [verifyResult, setVerifyResult] = useState(null);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [images, setImages] = useState([]);
   const [highRiskImages, setHighRiskImages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -37,6 +40,22 @@ export default function Home() {
       console.error('Error loading medium/high-risk images:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleVerify = async (e) => {
+    e.preventDefault();
+    if (!verifyHash.trim()) return;
+    setIsVerifying(true);
+    setVerifyResult(null);
+    try {
+      const res = await fetch(`/api/verify?id=${encodeURIComponent(verifyHash.trim())}`);
+      const data = await res.json();
+      setVerifyResult(data);
+    } catch {
+      setVerifyResult({ error: 'Request failed' });
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -189,6 +208,68 @@ export default function Home() {
               className="search-input"
             />
           </div>
+        </div>
+
+        {/* ── Verify ── */}
+        <div style={{ padding: '28px 0', borderBottom: '1px solid var(--border)' }}>
+          <p className="section-label" style={{ color: 'var(--accent)', marginBottom: '16px' }}>&nbsp;Verify Hash</p>
+          <form onSubmit={handleVerify} style={{ display: 'flex', gap: '10px', maxWidth: '640px' }}>
+            <input
+              type="text"
+              placeholder="SHA-256 hash…"
+              value={verifyHash}
+              onChange={(e) => setVerifyHash(e.target.value)}
+              className="search-input"
+              style={{ flex: 1 }}
+            />
+            <button
+              type="submit"
+              disabled={isVerifying}
+              className="btn-accent"
+              style={{ padding: '8px 20px', fontSize: '11px', opacity: isVerifying ? 0.6 : 1, cursor: isVerifying ? 'not-allowed' : 'pointer', flexShrink: 0 }}
+            >
+              {isVerifying ? '⟳' : 'VERIFY'}
+            </button>
+          </form>
+
+          {verifyResult && (
+            <div style={{
+              marginTop: '16px',
+              maxWidth: '640px',
+              padding: '16px 20px',
+              borderLeft: `2px solid ${verifyResult.found ? 'var(--accent)' : 'var(--risk-high)'}`,
+              backgroundColor: verifyResult.found ? 'var(--bg-surface)' : 'var(--risk-high-dim)',
+            }}>
+              {verifyResult.error ? (
+                <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--risk-high)', margin: 0 }}>
+                  ERR: {verifyResult.error}
+                </p>
+              ) : (
+                <>
+                  <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: verifyResult.found ? 'var(--accent)' : 'var(--risk-high)', margin: '0 0 8px', fontWeight: 600 }}>
+                    {verifyResult.found ? '✓ FOUND' : '✗ NOT FOUND'}
+                  </p>
+                  <p style={{ fontFamily: "'Outfit', sans-serif", fontSize: '14px', color: 'var(--text-primary)', margin: '0 0 8px', lineHeight: '1.5' }}>
+                    {verifyResult.message}
+                  </p>
+                  {verifyResult.found && (
+                    <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+                      {verifyResult.modelUsed && (
+                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: 'var(--text-muted)' }}>
+                          MODEL:{verifyResult.modelUsed}
+                        </span>
+                      )}
+                      {verifyResult.registeredAt && (
+                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: 'var(--text-muted)' }}>
+                          {new Date(Number(verifyResult.registeredAt) * 1000).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
         </div>
 
         {/* ── Error ── */}
