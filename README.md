@@ -1,5 +1,7 @@
 # ZorAi
 
+![CI](https://github.com/jvitorbarros15/zorai/actions/workflows/ci.yml/badge.svg)
+
 ZorAi is a decentralized AI image verification application. It creates a verifiable record for AI-generated images by combining content metadata, IPFS storage, and an on-chain registry deployed on Base Sepolia.
 
 The application is built with Next.js, React, Tailwind CSS, Solidity, Hardhat, and ethers.js.
