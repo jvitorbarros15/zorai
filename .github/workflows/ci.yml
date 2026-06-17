@@ -18,6 +18,8 @@ jobs:
           node-version: 20
           cache: npm
 
-      - run: npm ci
+      - run: npm install
 
       - run: ./node_modules/.bin/hardhat test
+
+      - run: npm run test:api

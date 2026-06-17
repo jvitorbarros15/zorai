@@ -65,6 +65,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       isAiGenerated: true,
       found: true,
+      message: `AI-generated, attested by ${record.creator}`,
       imageId: imageHash,
       ipfsHash: record.ipfsHash,
       modelUsed: record.modelUsed,
@@ -88,7 +89,7 @@ export default async function handler(req, res) {
       return res.status(404).json({
         isAiGenerated: false,
         found: false,
-        message: 'Image not found in ZorAI registry',
+        message: 'No ZorAi record. This does NOT mean the content is real.',
       });
     }
     console.error('[verify] error:', err);
