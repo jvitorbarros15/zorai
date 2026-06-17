@@ -2,13 +2,13 @@ name: CI
 
 on:
   push:
-    branches: ["**"]
+    branches: [master]
   pull_request:
-    branches: ["**"]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v4
@@ -20,4 +20,4 @@ jobs:
 
       - run: npm ci
 
-      - run: npx hardhat test
+      - run: ./node_modules/.bin/hardhat test
