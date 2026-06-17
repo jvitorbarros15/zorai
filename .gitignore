@@ -48,7 +48,8 @@ next-env.d.ts
 .vscode
 
 # planning docs — never commit
-docs/superpowers/
+docs/
+STATUS.md
 *Overview.md
 *-design.md
 *-plan.md
