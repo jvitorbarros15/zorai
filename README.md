@@ -40,8 +40,8 @@ The deployed registry contract is `ZorAiRegistry`.
 | --- | --- |
 | Network | Base Sepolia |
 | Chain ID | `84532` |
-| Contract Address | `0xd11eAEA00A92E6eE97DD14e6F97dbBb7971ef549` |
-| Explorer | https://sepolia.basescan.org/address/0xd11eAEA00A92E6eE97DD14e6F97dbBb7971ef549 |
+| Contract Address | `0x30066d398E5947dBa29E84d0eaB2aaCeB3946341` |
+| Explorer | https://sepolia.basescan.org/address/0x30066d398E5947dBa29E84d0eaB2aaCeB3946341 |
 
 ### Core Methods
 
@@ -89,7 +89,7 @@ Create a local `.env` file for development and contract deployment.
 
 ```bash
 PRIVATE_KEY=0xYOUR_DEPLOYER_PRIVATE_KEY
-NEXT_PUBLIC_CONTRACT_ADDRESS=0xd11eAEA00A92E6eE97DD14e6F97dbBb7971ef549
+NEXT_PUBLIC_CONTRACT_ADDRESS=0x30066d398E5947dBa29E84d0eaB2aaCeB3946341
 ZORAI_SIGNER_PRIVATE_KEY=0xYOUR_SERVER_SIGNER_PRIVATE_KEY
 ZORAI_RPC_URL=https://sepolia.base.org
 ZORAI_API_KEY=your_api_key

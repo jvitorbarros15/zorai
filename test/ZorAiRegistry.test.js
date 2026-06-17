@@ -66,10 +66,28 @@ describe("ZorAiRegistry access control", function () {
     await expect(register(issuer)).to.be.revertedWith("Not authorized issuer");
   });
 
+  it("lets an authorized issuer update verification", async function () {
+    await register(owner);
+    await registry.addIssuer(issuer.address);
+    await expect(
+      registry.connect(issuer).updateVerification(sample.imageId, true, 0, [])
+    ).to.not.be.reverted;
+    const [,,,, isVerified] = await registry.getImageData(sample.imageId);
+    expect(isVerified).to.equal(true);
+  });
+
   it("blocks a non-issuer from updating verification", async function () {
     await register(owner);
     await expect(
       registry.connect(outsider).updateVerification(sample.imageId, true, 0, [])
     ).to.be.revertedWith("Not authorized issuer");
+  });
+
+  it("blocks adding the zero address as issuer", async function () {
+    await expect(registry.addIssuer(ethers.ZeroAddress)).to.be.revertedWith("Zero address");
+  });
+
+  it("blocks removing the owner from issuers", async function () {
+    await expect(registry.removeIssuer(owner.address)).to.be.revertedWith("Cannot remove owner");
   });
 });

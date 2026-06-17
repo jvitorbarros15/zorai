@@ -26,13 +26,19 @@ contract ZorAiRegistry {
     }
 
     function addIssuer(address issuer) public onlyOwner {
-        authorizedIssuers[issuer] = true;
-        emit IssuerAdded(issuer);
+        require(issuer != address(0), "Zero address");
+        if (!authorizedIssuers[issuer]) {
+            authorizedIssuers[issuer] = true;
+            emit IssuerAdded(issuer);
+        }
     }
 
     function removeIssuer(address issuer) public onlyOwner {
-        authorizedIssuers[issuer] = false;
-        emit IssuerRemoved(issuer);
+        require(issuer != owner, "Cannot remove owner");
+        if (authorizedIssuers[issuer]) {
+            authorizedIssuers[issuer] = false;
+            emit IssuerRemoved(issuer);
+        }
     }
 
     // Risk levels
@@ -57,7 +63,8 @@ contract ZorAiRegistry {
     
     // Array to keep track of high-risk images
     string[] public highRiskImages;
-    
+    mapping(string => bool) private inHighRiskArray;
+
     // Events
     event ImageRegistered(
         string indexed imageId,
@@ -102,9 +109,9 @@ contract ZorAiRegistry {
         images[imageId] = newImage;
         registeredImages.push(imageId);
 
-        // If high risk, add to high-risk images array
         if (riskLevel == RiskLevel.HIGH) {
             highRiskImages.push(imageId);
+            inHighRiskArray[imageId] = true;
         }
 
         // Emit event
@@ -157,19 +164,9 @@ contract ZorAiRegistry {
         data.riskLevel = riskLevel;
         data.riskReasons = riskReasons;
 
-        // Update high-risk images array
-        if (riskLevel == RiskLevel.HIGH) {
-            // Check if already in high-risk array
-            bool isHighRisk = false;
-            for (uint i = 0; i < highRiskImages.length; i++) {
-                if (keccak256(bytes(highRiskImages[i])) == keccak256(bytes(imageId))) {
-                    isHighRisk = true;
-                    break;
-                }
-            }
-            if (!isHighRisk) {
-                highRiskImages.push(imageId);
-            }
+        if (riskLevel == RiskLevel.HIGH && !inHighRiskArray[imageId]) {
+            highRiskImages.push(imageId);
+            inHighRiskArray[imageId] = true;
         }
 
         emit ImageVerified(imageId, isVerified, riskLevel);
