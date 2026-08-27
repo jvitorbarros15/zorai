@@ -1,201 +1,89 @@
-# ZorAi
+# ZorAI
 
-![CI](https://github.com/jvitorbarros15/zorai/actions/workflows/ci.yml/badge.svg)
+[![CI](https://github.com/jvitorbarros15/zorai/actions/workflows/ci.yml/badge.svg)](https://github.com/jvitorbarros15/zorai/actions/workflows/ci.yml)
 
-ZorAi is a decentralized AI image verification application. It creates a verifiable record for AI-generated images by combining content metadata, IPFS storage, and an on-chain registry deployed on Base Sepolia.
+Decentralized provenance registry for AI-generated images, combining content analysis, IPFS metadata, and an on-chain record on Base Sepolia.
 
-The application is built with Next.js, React, Tailwind CSS, Solidity, Hardhat, and ethers.js.
+[Live demo](https://zorai.vercel.app) · [Portfolio](https://joao-vitor-barros-da-silva-portfoli.vercel.app) · [Contract on BaseScan](https://sepolia.basescan.org/address/0x30066d398E5947dBa29E84d0eaB2aaCeB3946341)
 
-## Overview
+![ZorAI verification interface](docs/preview.jpg)
 
-ZorAi helps users register and verify AI-generated image identifiers. Each registration can include an image hash, the AI model used, an IPFS metadata reference, a verification status, and risk assessment information.
+## What it demonstrates
 
-The registry contract provides a public source of truth for image provenance data. The frontend and API routes interact with the contract to submit new records and verify existing ones.
+- A complete web3 workflow spanning Next.js, API routes, Solidity, IPFS, and wallet interaction
+- Deterministic image identifiers used to register and verify provenance
+- Structured AI risk analysis stored alongside durable public records
+- Server-side signing protected by an API key, with client wallet support through MetaMask
+- Contract compilation and deployment tooling with Hardhat
 
-## Features
+## How it works
 
-- Register AI-generated image records on Base Sepolia.
-- Verify whether an image hash has already been registered.
-- Store metadata references using IPFS CIDs.
-- Track the AI model associated with each image record.
-- Include risk level and risk reason metadata.
-- Connect with browser wallets such as MetaMask.
-- Provide API routes for registration and verification workflows.
+```text
+Image -> content analysis -> metadata on IPFS -> hash registered on Base Sepolia
+                                                    |
+Verification request -------------------------------+
+```
 
-## Tech Stack
+## Stack
 
-- **Frontend**: Next.js, React
-- **Styling**: Tailwind CSS
-- **Smart Contracts**: Solidity
-- **Blockchain Tooling**: Hardhat, ethers.js
-- **Network**: Base Sepolia
-- **Storage**: IPFS through Pinata
-- **Wallet Support**: MetaMask and EVM-compatible wallets
+Next.js 14, React 18, Tailwind CSS, Solidity, Hardhat, ethers.js, Pinata/IPFS, OpenAI, Anthropic, and MetaMask.
 
-## Smart Contract
-
-The deployed registry contract is `ZorAiRegistry`.
-
-### Base Sepolia Deployment
+## Deployed contract
 
 | Field | Value |
 | --- | --- |
+| Contract | `ZorAiRegistry` |
 | Network | Base Sepolia |
 | Chain ID | `84532` |
-| Contract Address | `0x30066d398E5947dBa29E84d0eaB2aaCeB3946341` |
-| Explorer | https://sepolia.basescan.org/address/0x30066d398E5947dBa29E84d0eaB2aaCeB3946341 |
+| Address | `0x30066d398E5947dBa29E84d0eaB2aaCeB3946341` |
 
-### Core Methods
+Core methods are `registerImage`, `getImageData`, and `isImageRegistered`.
 
-```solidity
-registerImage(
-  string memory imageId,
-  string memory modelUsed,
-  string memory ipfsHash,
-  RiskLevel riskLevel,
-  string[] memory riskReasons
-)
-```
+## Run locally
 
-Registers a new image record on-chain.
-
-```solidity
-getImageData(string memory imageId)
-```
-
-Returns the stored metadata for a registered image.
-
-```solidity
-isImageRegistered(string memory imageId)
-```
-
-Returns whether an image ID already exists in the registry.
-
-## Metadata Format
-
-Image metadata can be stored on IPFS using a JSON structure similar to:
-
-```json
-{
-  "imageId": "sha256 hash string",
-  "modelUsed": "AI model name",
-  "timestamp": "ISO timestamp or Unix timestamp",
-  "riskCategory": "low | medium | high",
-  "riskReasons": ["reason one", "reason two"]
-}
-```
-
-## Environment Variables
-
-Create a local `.env` file for development and contract deployment.
-
-```bash
-PRIVATE_KEY=0xYOUR_DEPLOYER_PRIVATE_KEY
-NEXT_PUBLIC_CONTRACT_ADDRESS=0x30066d398E5947dBa29E84d0eaB2aaCeB3946341
-ZORAI_SIGNER_PRIVATE_KEY=0xYOUR_SERVER_SIGNER_PRIVATE_KEY
-ZORAI_RPC_URL=https://sepolia.base.org
-ZORAI_API_KEY=your_api_key
-```
-
-`PRIVATE_KEY` is used by Hardhat deployment scripts. `ZORAI_SIGNER_PRIVATE_KEY` is used by server-side API routes that write to the contract. Do not expose private keys in client-side environment variables or commit them to git.
-
-## Local Development
-
-Install dependencies:
+Requirements: Node.js 20+, a Base Sepolia RPC endpoint, and a dedicated test wallet.
 
 ```bash
 npm install
-```
-
-Start the development server:
-
-```bash
+cp .env.example .env
 npm run dev
 ```
 
-Run the Hardhat compiler:
+Required configuration varies by workflow:
+
+```text
+NEXT_PUBLIC_CONTRACT_ADDRESS
+ZORAI_RPC_URL
+ZORAI_API_KEY
+ZORAI_SIGNER_PRIVATE_KEY   # server-side registration only
+PRIVATE_KEY               # Hardhat deployment only
+```
+
+Never expose private keys through `NEXT_PUBLIC_` variables or use a wallet that holds real funds.
+
+## Contract workflow
 
 ```bash
 npx hardhat compile
-```
-
-Deploy the contract to Base Sepolia:
-
-```bash
 npx hardhat run scripts/deploy.js --network baseSepolia
 ```
 
-## Project Structure
+## API
+
+- `POST /api/register` writes a new record using the configured server signer and `x-api-key` header.
+- `GET /api/verify` reads provenance data from the registry contract.
+
+Registration accepts an image hash, model name, IPFS CID, risk level, and risk reasons. Optional metadata includes company, external ID, source URL, and content type.
+
+## Project structure
 
 ```text
-zorai-app/
-├── components/          Reusable React components
-├── contexts/            React context providers
-├── contracts/           Solidity contract and ABI files
-├── lib/                 Blockchain and registry helpers
-├── pages/               Next.js pages and API routes
-├── public/              Static assets
-├── scripts/             Hardhat deployment scripts
-├── styles/              Global styles
-├── hardhat.config.js    Hardhat network configuration
-└── package.json         Project scripts and dependencies
+components/        Reusable React components
+contracts/         Solidity source and ABI files
+lib/               Blockchain and registry helpers
+pages/api/         Registration and verification routes
+scripts/           Hardhat deployment scripts
+docs/preview.jpg   Recruiter-facing product preview
 ```
 
-## API Routes
-
-The app includes server-side API routes for verification and registration.
-
-### Register
-
-```http
-POST /api/register
-```
-
-Registers an image record using the configured server-side signer.
-
-Required headers:
-
-```http
-x-api-key: your_api_key
-```
-
-Required body fields:
-
-```json
-{
-  "imageHash": "sha256 hash string",
-  "modelUsed": "AI model name",
-  "ipfsHash": "IPFS CID"
-}
-```
-
-Optional body fields include `riskLevel`, `riskReasons`, `company`, `externalId`, `sourceUrl`, and `contentType`.
-
-### Verify
-
-```http
-GET /api/verify
-```
-
-Looks up an image record from the deployed registry contract.
-
-## Deployment
-
-1. Configure production environment variables in the hosting provider.
-2. Set `NEXT_PUBLIC_CONTRACT_ADDRESS` to the deployed Base Sepolia contract address.
-3. Set `ZORAI_SIGNER_PRIVATE_KEY` only if server-side registration is required.
-4. Configure Pinata and any AI provider credentials needed by the application.
-5. Deploy the Next.js application to Vercel or another Node-compatible hosting provider.
-6. Test registration and verification against Base Sepolia.
-
-## Security Notes
-
-- Never commit `.env`, private keys, API keys, or seed phrases.
-- Use a dedicated test wallet for Base Sepolia deployments.
-- Keep server-side signing keys out of frontend code.
-- Rotate keys if they are exposed in screenshots, logs, or chat.
-- Use Base Sepolia test ETH only for testnet transactions.
-
-## License
-
-MIT
+ZorAI records provenance claims; it does not prove that every unregistered image is authentic.
