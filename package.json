@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint pages components lib sdk scripts __tests__ test-support --ext .js,.cjs",
     "test:api": "jest --runInBand",
     "test:contracts": "hardhat test",
     "check": "npm run lint && npm run test:api && npm run test:contracts && npm run build",
