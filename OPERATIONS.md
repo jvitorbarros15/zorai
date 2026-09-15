@@ -16,9 +16,10 @@ Redis keys include chain and registry. `registration:DIGEST` contains the accoun
 
 1. Poll `/api/registration?id=DIGEST` using the original registering account.
 2. For an uncertain broadcast, retry the **identical** signed request while its claim is fresh. The persisted raw transaction is rebroadcast, preserving its nonce and hash. Inspect the original transaction on the correct explorer.
-3. A confirmed or failed receipt removes pending state. Failed jobs remain terminal for investigation. Preserve the original transaction/evidence and determine the cause before manually enabling a new attempt.
-4. A missing/stuck transaction requires an operator to inspect nonce, pending pool, gas and chain state. There is no automatic replacement/cancellation workflow. Never clear the pending pointer merely because a request timed out; the original transaction could still mine.
-5. If the evidence was pinned but no transaction was persisted, retry may leave an orphan pin. Review and remove unreferenced pins under the retention policy.
+3. Stuck policy: after `ZORAI_STUCK_TX_SECONDS` (default 600) a retry under the lock replaces the transaction with the same nonce and +25% fees; if the nonce was consumed by another transaction and no known hash mined, the job becomes `dropped` (or `confirmed` if the record exists on chain) and the queue is released. Status polling never signs.
+4. Failed/dropped jobs: an identical request returns the terminal job; a newly signed claim for the same digest archives the old job (90-day TTL) and starts a new attempt.
+5. Ownership: `acceptOwnership` revokes the previous owner's issuer rights. Never make the service signer the owner; if it is, re-add it with `addIssuer` right after transfer, or `/api/register` returns `registrar_not_authorized`.
+6. If the evidence was pinned but no transaction was persisted, retry may leave an orphan pin. Review and remove unreferenced pins under the retention policy.
 
 The current receipt policy is one mined receipt, with later polling able to update a job. There is no completed production reorg/finality policy or autonomous reconciliation worker. These are launch gates.
 
@@ -26,7 +27,7 @@ The current receipt policy is one mined receipt, with later polling able to upda
 
 Redis atomically reserves a monthly verification unit before dependency work. Successful unknown results count. Service failures attempt to decrement the counter; failure of Redis during the refund may leave a consumed unit. Use request IDs and customer reports to reconcile exceptional usage before billing. These quota counters are not an invoice ledger. A client timeout is ambiguous and retries can consume another unit.
 
-Daily publishing limits count validated registration attempts, including retries. Polling consumes the authenticated burst allowance, not monthly verification units. Public requests consume separate minute and day limits. Plan for IP rotation and shared NAT addresses.
+Daily publishing limits count registrations that create a new transaction; rejected, busy and idempotent retries are refunded. Polling consumes the authenticated burst allowance, not monthly verification units. Public requests consume separate minute and day limits. Plan for IP rotation and shared NAT addresses.
 
 ## Data handling
 

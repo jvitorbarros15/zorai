@@ -1,6 +1,6 @@
 import { route, object, assert } from "../../lib/api";
 import { authenticate } from "../../lib/access";
-import { consume } from "../../lib/store";
+import { consume, refund } from "../../lib/store";
 import { validateEnvelope } from "../../lib/attestation";
 import { decodeAsset, inspectAsset } from "../../lib/assets";
 import { registerEvidence } from "../../lib/registration";
@@ -41,12 +41,18 @@ export default route(["POST"], async (req, res) => {
     "plan_unconfigured",
     "An issuer publishing limit must be configured.",
   );
-  await consume(
-    "zorai:publish:" + client.id + ":" + new Date().toISOString().slice(0, 10),
-    client.dailyRegistrationLimit,
-    172800,
-  );
-  const job = await registerEvidence(body.evidence, client);
+  const publishKey =
+    "zorai:publish:" + client.id + ":" + new Date().toISOString().slice(0, 10);
+  await consume(publishKey, client.dailyRegistrationLimit, 172800);
+  let result;
+  try {
+    result = await registerEvidence(body.evidence, client);
+  } catch (error) {
+    await refund(publishKey);
+    throw error;
+  }
+  if (!result.created) await refund(publishKey);
+  const job = result.job;
   res
     .status(
       job.status === "failed" ? 409 : job.status === "confirmed" ? 200 : 202,

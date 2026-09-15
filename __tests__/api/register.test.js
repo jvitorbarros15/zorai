@@ -2,13 +2,14 @@ import { createMocks } from "node-mocks-http";
 import handler from "../../pages/api/register";
 jest.mock("../../lib/store", () => ({
   consume: jest.fn(),
+  refund: jest.fn(),
   getStore: jest.fn(),
   namespace: () => "test:",
 }));
 jest.mock("../../lib/registration", () => ({ registerEvidence: jest.fn() }));
 const { ethers } = require("ethers");
 const { digest } = require("../../lib/access");
-const { consume } = require("../../lib/store");
+const { consume, refund } = require("../../lib/store");
 const { registerEvidence } = require("../../lib/registration");
 const { prepareRegistration } = require("../../sdk");
 const { png } = require("../../test-support/fixtures.cjs");
@@ -22,6 +23,7 @@ async function call(body, headers = { authorization: "Bearer " + token }) {
 beforeEach(async () => {
   jest.resetAllMocks();
   consume.mockResolvedValue(1);
+  refund.mockResolvedValue(undefined);
   issuer = ethers.Wallet.createRandom();
   process.env.ZORAI_CHAIN_ID = "31337";
   process.env.NEXT_PUBLIC_CONTRACT_ADDRESS =
@@ -54,7 +56,7 @@ beforeEach(async () => {
     chainId: 31337,
     registryAddress: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS,
   });
-  registerEvidence.mockResolvedValue({ status: "submitted", txHash: "0xreal" });
+  registerEvidence.mockResolvedValue({ job: { status: "submitted", txHash: "0xreal" }, created: true });
 });
 function body() {
   return {
@@ -96,10 +98,28 @@ test("pending transaction is not reported as confirmed", async () => {
   expect(res._getJSONData().status).toBe("submitted");
 });
 test("confirmed receipt returns 200", async () => {
-  registerEvidence.mockResolvedValue({ status: "confirmed" });
+  registerEvidence.mockResolvedValue({ job: { status: "confirmed" }, created: false });
   expect((await call(body())).statusCode).toBe(200);
 });
 test("failed transaction returns conflict", async () => {
-  registerEvidence.mockResolvedValue({ status: "failed" });
+  registerEvidence.mockResolvedValue({ job: { status: "failed" }, created: false });
   expect((await call(body())).statusCode).toBe(409);
+});
+test("refund called when registerEvidence rejects", async () => {
+  const error = new Error("publisher_busy");
+  error.code = "publisher_busy";
+  error.status = 409;
+  registerEvidence.mockRejectedValue(error);
+  await expect(call(body())).resolves.toBeDefined();
+  expect(refund).toHaveBeenCalled();
+});
+test("refund called when created is false", async () => {
+  registerEvidence.mockResolvedValue({ job: { status: "submitted" }, created: false });
+  await call(body());
+  expect(refund).toHaveBeenCalled();
+});
+test("refund not called when created is true", async () => {
+  registerEvidence.mockResolvedValue({ job: { status: "submitted" }, created: true });
+  await call(body());
+  expect(refund).not.toHaveBeenCalled();
 });
