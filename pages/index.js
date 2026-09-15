@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Layout from "../components/layout/Layout";
@@ -12,6 +12,7 @@ export default function Home() {
     [result, setResult] = useState(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
+  const fileInput = useRef(null);
   useEffect(() => {
     if (typeof router.query.id === "string") setDigest(router.query.id);
   }, [router.query.id]);
@@ -76,6 +77,7 @@ export default function Home() {
               </label>
               <input
                 id="image"
+                ref={fileInput}
                 type="file"
                 accept="image/png,image/jpeg"
                 onChange={(e) => {
@@ -101,8 +103,19 @@ export default function Home() {
               />
               {file && (
                 <p className="muted">
-                  Selected: {file.name}. Clear the file selection to enter a
-                  digest.
+                  Selected: {file.name}.{" "}
+                  <button
+                    type="button"
+                    className="secondary"
+                    onClick={() => {
+                      fileInput.current.value = "";
+                      setFile(null);
+                      setResult(null);
+                      setError("");
+                    }}
+                  >
+                    Clear file
+                  </button>
                 </p>
               )}
               <button type="submit">

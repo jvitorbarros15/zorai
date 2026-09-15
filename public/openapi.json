@@ -12,6 +12,9 @@
         "security": [
           {
             "bearerAuth": []
+          },
+          {
+            "apiKeyHeader": []
           }
         ],
         "requestBody": {
@@ -163,6 +166,9 @@
         "security": [
           {
             "bearerAuth": []
+          },
+          {
+            "apiKeyHeader": []
           }
         ],
         "parameters": [
@@ -430,6 +436,9 @@
         "security": [
           {
             "bearerAuth": []
+          },
+          {
+            "apiKeyHeader": []
           }
         ],
         "requestBody": {
@@ -591,6 +600,9 @@
         "security": [
           {
             "bearerAuth": []
+          },
+          {
+            "apiKeyHeader": []
           }
         ],
         "parameters": [
@@ -733,6 +745,9 @@
         "security": [
           {
             "bearerAuth": []
+          },
+          {
+            "apiKeyHeader": []
           }
         ],
         "responses": {
@@ -872,6 +887,12 @@
       "bearerAuth": {
         "type": "http",
         "scheme": "bearer"
+      },
+      "apiKeyHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key",
+        "description": "Alternative to the Bearer header. If both are sent they must match."
       }
     },
     "schemas": {
