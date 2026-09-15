@@ -80,16 +80,21 @@ async function main() {
   });
   validateEnvelope(prepared.evidence, { fresh: true });
   const client = { id: "local-publisher" };
-  const job = await registerEvidence(prepared.evidence, client);
+  const regResult = await registerEvidence(prepared.evidence, client);
+  const job = regResult.job;
+  assert.equal(regResult.created, true);
   assert.equal(job.status, "submitted");
   assert.match(job.txHash, /^0x[0-9a-f]{64}$/);
   assert.equal(await registry.getTotalImages(), 0n);
-  const repeat = await registerEvidence(prepared.evidence, client);
+  const repeatResult = await registerEvidence(prepared.evidence, client);
+  const repeat = repeatResult.job;
+  assert.equal(repeatResult.created, false);
   assert.equal(repeat.status, "confirmed");
   assert.equal(repeat.txHash, job.txHash);
   assert.equal(pins, 1);
   assert.equal(await registry.getTotalImages(), 1n);
-  const duplicate = await registerEvidence(prepared.evidence, client);
+  const duplicateResult = await registerEvidence(prepared.evidence, client);
+  const duplicate = duplicateResult.job;
   assert.equal(duplicate.txHash, job.txHash);
   assert.equal(pins, 1);
   const status = await registrationStatus(
