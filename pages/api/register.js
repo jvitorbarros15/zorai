@@ -1,116 +1,55 @@
-import {
-  buildMetadataTemplate,
-  buildWatermark,
-  fetchRegistrationEvent,
-  getContractAddress,
-  getWriteContract,
-  hashStructuredPayload,
-  ZORAI_CHAIN_ID,
-  ZORAI_CHAIN_SLUG,
-} from '../../lib/zoraiRegistry';
+import { route, object, assert } from "../../lib/api";
+import { authenticate } from "../../lib/access";
+import { consume } from "../../lib/store";
+import { validateEnvelope } from "../../lib/attestation";
+import { decodeAsset, inspectAsset } from "../../lib/assets";
+import { registerEvidence } from "../../lib/registration";
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  const apiKey = req.headers['x-api-key'];
-  if (!apiKey || apiKey !== process.env.ZORAI_API_KEY) {
-    return res.status(401).json({ error: 'Invalid or missing API key' });
-  }
-
-  const {
-    imageHash,
-    modelUsed,
-    ipfsHash,
-    riskLevel = 0,
-    riskReasons = [],
-    company,
-    externalId,
-    sourceUrl,
-    contentType = 'image',
-  } = req.body;
-
-  if (!imageHash || !modelUsed || !ipfsHash) {
-    return res.status(400).json({
-      error: 'Missing required fields: imageHash, modelUsed, ipfsHash',
-    });
-  }
-
-  if (!Array.isArray(riskReasons)) {
-    return res.status(400).json({
-      error: 'riskReasons must be an array of strings',
-    });
-  }
-
-  if (!process.env.ZORAI_SIGNER_PRIVATE_KEY) {
-    return res.status(503).json({ error: 'Signer not configured' });
-  }
-
-  if (!getContractAddress()) {
-    return res.status(503).json({ error: 'Contract address not configured' });
-  }
-
-  try {
-    const contract = getWriteContract();
-
-    const tx = await contract.registerImage(
-      imageHash,
-      modelUsed,
-      ipfsHash,
-      riskLevel,
-      riskReasons
-    );
-    const receipt = await tx.wait();
-    const block = await contract.runner.provider.getBlock(receipt.blockNumber);
-    const registeredAt = new Date(Number(block.timestamp) * 1000).toISOString();
-    const eventInfo =
-      (await fetchRegistrationEvent(contract, imageHash)) || {
-        txHash: receipt.hash,
-        blockNumber: receipt.blockNumber,
-      };
-    const watermark = buildWatermark({
-      imageHash,
-      modelUsed,
-      registeredAt,
-      txHash: eventInfo.txHash,
-      blockNumber: eventInfo.blockNumber,
-    });
-    const watermarkHash = hashStructuredPayload(watermark);
-    const metadataTemplate = buildMetadataTemplate({
-      watermark,
-      watermarkHash,
-      company,
-      externalId,
-      sourceUrl,
-      contentType,
-    });
-
-    return res.status(200).json({
-      success: true,
-      imageId: imageHash,
-      txHash: receipt.hash,
-      blockNumber: receipt.blockNumber,
-      chain: ZORAI_CHAIN_SLUG,
-      chainId: ZORAI_CHAIN_ID,
-      contract: getContractAddress(),
-      watermark,
-      watermarkHash,
-      metadataTemplate,
-      registryRecord: {
-        imageId: imageHash,
-        modelUsed,
-        ipfsHash,
-        riskLevel,
-        riskReasons,
-        publisher: company || null,
-        externalId: externalId || null,
-        sourceUrl: sourceUrl || null,
-        contentType,
-      },
-    });
-  } catch (err) {
-    console.error('[register] error:', err);
-    return res.status(500).json({ error: err.message });
-  }
-}
+export const config = {
+  api: { bodyParser: { sizeLimit: "4.1mb" } },
+  maxDuration: 60,
+};
+export default route(["POST"], async (req, res) => {
+  const client = await authenticate(req, "register");
+  const body = object(req.body);
+  const { claim } = validateEnvelope(body.evidence, { fresh: true });
+  assert(
+    client.issuerId === claim.issuerId,
+    403,
+    "issuer_mismatch",
+    "This key cannot submit for that issuer.",
+  );
+  const inspection = inspectAsset(decodeAsset(body.assetBase64));
+  assert(
+    inspection.imageHash === claim.imageHash,
+    422,
+    "asset_mismatch",
+    "The signed digest does not match the final image bytes.",
+  );
+  assert(
+    inspection.marker &&
+      inspection.marker.issuerId === claim.issuerId &&
+      inspection.marker.nonce === claim.nonce,
+    422,
+    "marker_mismatch",
+    "The metadata marker does not match the signed claim.",
+  );
+  assert(
+    Number.isSafeInteger(client.dailyRegistrationLimit) &&
+      client.dailyRegistrationLimit > 0,
+    503,
+    "plan_unconfigured",
+    "An issuer publishing limit must be configured.",
+  );
+  await consume(
+    "zorai:publish:" + client.id + ":" + new Date().toISOString().slice(0, 10),
+    client.dailyRegistrationLimit,
+    172800,
+  );
+  const job = await registerEvidence(body.evidence, client);
+  res
+    .status(
+      job.status === "failed" ? 409 : job.status === "confirmed" ? 200 : 202,
+    )
+    .json(job);
+});

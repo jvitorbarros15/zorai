@@ -47,11 +47,12 @@ next-env.d.ts
 .idea
 .vscode
 
-# lockfile — Windows/Linux optional deps diverge, use npm install in CI
-package-lock.json
+# Local tool caches
+.npm-cache/
 
 # planning docs — never commit
 docs/
+/discovery/
 STATUS.md
 *Overview.md
 *-design.md

@@ -4,10 +4,31 @@ pragma solidity ^0.8.0;
 contract ZorAiRegistry {
     // Access control
     address public owner;
+    address public pendingOwner;
     mapping(address => bool) public authorizedIssuers;
 
     event IssuerAdded(address indexed issuer);
     event IssuerRemoved(address indexed issuer);
+    event OwnershipTransferStarted(address indexed previousOwner, address indexed pendingOwner);
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+
+    function transferOwnership(address nextOwner) external onlyOwner {
+        require(nextOwner != address(0), "Zero address");
+        pendingOwner = nextOwner;
+        emit OwnershipTransferStarted(owner, nextOwner);
+    }
+
+    function acceptOwnership() external {
+        require(msg.sender == pendingOwner, "Not pending owner");
+        address previous = owner;
+        owner = msg.sender;
+        pendingOwner = address(0);
+        authorizedIssuers[previous] = false;
+        authorizedIssuers[msg.sender] = true;
+        emit IssuerRemoved(previous);
+        emit IssuerAdded(msg.sender);
+        emit OwnershipTransferred(previous, msg.sender);
+    }
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Not owner");
@@ -64,6 +85,7 @@ contract ZorAiRegistry {
     // Array to keep track of high-risk images
     string[] public highRiskImages;
     mapping(string => bool) private inHighRiskArray;
+    mapping(string => uint256) private highRiskIndex;
 
     // Events
     event ImageRegistered(
@@ -110,6 +132,7 @@ contract ZorAiRegistry {
         registeredImages.push(imageId);
 
         if (riskLevel == RiskLevel.HIGH) {
+            highRiskIndex[imageId] = highRiskImages.length;
             highRiskImages.push(imageId);
             inHighRiskArray[imageId] = true;
         }
@@ -160,13 +183,23 @@ contract ZorAiRegistry {
         require(images[imageId].creator != address(0), "Image not found");
 
         ImageData storage data = images[imageId];
+        require(msg.sender == data.creator || msg.sender == owner, "Not record issuer or owner");
         data.isVerified = isVerified;
         data.riskLevel = riskLevel;
         data.riskReasons = riskReasons;
 
         if (riskLevel == RiskLevel.HIGH && !inHighRiskArray[imageId]) {
+            highRiskIndex[imageId] = highRiskImages.length;
             highRiskImages.push(imageId);
             inHighRiskArray[imageId] = true;
+        } else if (riskLevel != RiskLevel.HIGH && inHighRiskArray[imageId]) {
+            uint256 index = highRiskIndex[imageId];
+            string memory last = highRiskImages[highRiskImages.length - 1];
+            highRiskImages[index] = last;
+            highRiskIndex[last] = index;
+            highRiskImages.pop();
+            delete highRiskIndex[imageId];
+            inHighRiskArray[imageId] = false;
         }
 
         emit ImageVerified(imageId, isVerified, riskLevel);
@@ -196,4 +229,4 @@ contract ZorAiRegistry {
     function isHighRisk(string memory imageId) public view returns (bool) {
         return images[imageId].riskLevel == RiskLevel.HIGH;
     }
-} 
+}

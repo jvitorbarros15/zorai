@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [master]
+    branches: [master, 'feat/**']
   pull_request:
 
 jobs:
@@ -15,11 +15,15 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
-      - run: npm install
+      - run: npm ci
 
-      - run: ./node_modules/.bin/hardhat test
+      - run: npm run lint
+      - run: npm run test:contracts
 
       - run: npm run test:api
+      - run: npm run test:integration
+      - run: npm run build
+      - run: npm audit --omit=dev

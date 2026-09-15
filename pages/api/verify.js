@@ -1,98 +1,59 @@
-import {
-  buildWatermark,
-  fetchImageRecord,
-  fetchRegistrationEvent,
-  getContractAddress,
-  getReadContract,
-  getReadProvider,
-  hashStructuredPayload,
-  ZORAI_CHAIN_ID,
-  ZORAI_CHAIN_SLUG,
-} from '../../lib/zoraiRegistry';
+import { route, object, hash, assert } from "../../lib/api";
+import { authenticate, reserveVerification } from "../../lib/access";
+import { refund } from "../../lib/store";
+import { decodeAsset, inspectAsset } from "../../lib/assets";
+import { verifyImage } from "../../lib/verification";
 
-function getRequestPayload(req) {
-  if (req.method === 'GET') {
-    return {
-      imageHash: req.query.id,
-      watermarkHash: req.query.watermarkHash,
-    };
-  }
-
-  return req.body || {};
-}
-
-export default async function handler(req, res) {
-  if (!['GET', 'POST'].includes(req.method)) {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  const { imageHash, watermark, watermarkHash } = getRequestPayload(req);
-  if (!imageHash) {
-    return res.status(400).json({
-      error: req.method === 'GET'
-        ? 'Missing required query param: id (SHA-256 image hash)'
-        : 'Missing required field: imageHash',
-    });
-  }
-
-  if (!getContractAddress()) {
-    return res.status(503).json({ error: 'Contract address not configured' });
-  }
-
+export const config = {
+  api: { bodyParser: { sizeLimit: "4.1mb" } },
+  maxDuration: 30,
+};
+export default route(["GET", "POST"], async (req, res) => {
+  const client = await authenticate(req, "verify");
+  const payload =
+    req.method === "GET" ? { imageHash: req.query.id } : object(req.body);
+  assert(
+    !payload.watermark && !payload.watermarkHash,
+    400,
+    "legacy_watermark",
+    "Watermark hash comparison is replaced by signed evidence and exact-file verification.",
+  );
+  const inspection = payload.assetBase64
+    ? inspectAsset(decodeAsset(payload.assetBase64))
+    : null;
+  const imageHash = inspection ? inspection.imageHash : hash(payload.imageHash);
+  if (payload.imageHash && inspection)
+    assert(
+      hash(payload.imageHash) === imageHash,
+      400,
+      "file_hash_mismatch",
+      "The supplied digest does not match the uploaded file.",
+    );
+  const ticket = await reserveVerification(client);
   try {
-    const provider = getReadProvider();
-    const contractAddress = getContractAddress();
-
-    const code = await provider.getCode(contractAddress);
-    if (code === '0x') {
-      return res.status(503).json({ error: 'Contract not deployed on Base Sepolia' });
-    }
-
-    const contract = getReadContract();
-    const record = await fetchImageRecord(contract, imageHash);
-    const eventInfo = await fetchRegistrationEvent(contract, imageHash);
-    const onChainWatermark = buildWatermark({
-      imageHash,
-      modelUsed: record.modelUsed,
-      registeredAt: record.registeredAt,
-      txHash: eventInfo?.txHash,
-      blockNumber: eventInfo?.blockNumber,
-    });
-    const onChainWatermarkHash = hashStructuredPayload(onChainWatermark);
-    const suppliedWatermarkHash = watermarkHash || (watermark ? hashStructuredPayload(watermark) : null);
-    const watermarkMatches = suppliedWatermarkHash ? suppliedWatermarkHash === onChainWatermarkHash : null;
-
-    return res.status(200).json({
-      isAiGenerated: true,
-      found: true,
-      message: `AI-generated, attested by ${record.creator}`,
-      imageId: imageHash,
-      ipfsHash: record.ipfsHash,
-      modelUsed: record.modelUsed,
-      creator: record.creator,
-      registeredAt: record.registeredAt,
-      isVerified: record.isVerified,
-      riskLevel: record.riskLevel,
-      riskReasons: record.riskReasons,
-      chain: ZORAI_CHAIN_SLUG,
-      chainId: ZORAI_CHAIN_ID,
-      contract: contractAddress,
-      watermark: {
-        onChain: onChainWatermark,
-        onChainHash: onChainWatermarkHash,
-        suppliedHash: suppliedWatermarkHash,
-        matchesBlockchain: watermarkMatches,
-      },
-    });
-  } catch (err) {
-    if (err.code === 'CALL_EXCEPTION') {
-      return res.status(404).json({
-        isAiGenerated: false,
-        found: false,
-        message: 'No ZorAi record. This does NOT mean the content is real.',
+    const result = await verifyImage(imageHash);
+    if (inspection)
+      result.inspection = {
+        format: inspection.format,
+        bytes: inspection.bytes,
+        marker: inspection.marker,
+        sourceCredentialsPresent: inspection.hasSourceCredentials,
+        note: "Metadata presence alone is not proof of AI origin. Source C2PA credentials are not independently validated by this endpoint yet.",
+      };
+    res.setHeader("X-Usage-Remaining", ticket.remaining);
+    res
+      .status(200)
+      .json({
+        ...result,
+        usage: {
+          used: ticket.used,
+          limit: ticket.limit,
+          remaining: ticket.remaining,
+          resetsAt: ticket.resetsAt,
+        },
       });
-    }
-    console.error('[verify] error:', err);
-    return res.status(500).json({ error: err.message });
+  } catch (error) {
+    await refund(ticket.key);
+    throw error;
   }
-}
+});

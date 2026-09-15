@@ -1,5 +1,6 @@
-require("@nomicfoundation/hardhat-toolbox");
-require("dotenv").config({ path: ".env.local" });
+require("@nomicfoundation/hardhat-ethers");
+require("@nomicfoundation/hardhat-chai-matchers");
+require("dotenv").config({ path: ".env.local", quiet: true });
 
 module.exports = {
   solidity: "0.8.0",

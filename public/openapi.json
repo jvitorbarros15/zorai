@@ -1,0 +1,1193 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "ZorAI Provenance API",
+    "version": "1.0.0-pilot",
+    "description": "Approved issuer attestations with exact-file matching. Unknown is inconclusive. Direct provider integrations, C2PA validation and checkout are not live."
+  },
+  "paths": {
+    "/api/verify": {
+      "post": {
+        "summary": "Paid verification of a digest or PNG/JPEG",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "imageHash": {
+                    "$ref": "#/components/schemas/Hash"
+                  },
+                  "assetBase64": {
+                    "type": "string",
+                    "description": "Canonical base64 PNG/JPEG, max decoded size 3 MB"
+                  }
+                },
+                "anyOf": [
+                  {
+                    "required": [
+                      "imageHash"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "assetBase64"
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Verification"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Paid digest verification",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Hash"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Verification"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/verify": {
+      "post": {
+        "summary": "Public interactive hash lookup; 6 per client minute and 5000 total per UTC day",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "imageHash"
+                ],
+                "properties": {
+                  "imageHash": {
+                    "$ref": "#/components/schemas/Hash"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Verification"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/register": {
+      "post": {
+        "summary": "Publish an approved issuer claim bound to final file bytes",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "assetBase64",
+                  "evidence"
+                ],
+                "properties": {
+                  "assetBase64": {
+                    "type": "string"
+                  },
+                  "evidence": {
+                    "$ref": "#/components/schemas/Envelope"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Submitted; poll for receipt. This is not confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict/busy publisher, or a terminal failed transaction job",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Error"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Job"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/registration": {
+      "get": {
+        "summary": "Poll own registration job",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Hash"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No job owned by this account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account": {
+      "get": {
+        "summary": "Account details and monthly allowance",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Account"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Request rejected or service unavailable; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/status": {
+      "get": {
+        "summary": "Configuration summary, not dependency health",
+        "responses": {
+          "200": {
+            "description": "Configured network or unconfigured status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Hash": {
+        "type": "string",
+        "pattern": "^[a-fA-F0-9]{64}$",
+        "description": "SHA-256 of the final file bytes, no 0x prefix"
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "error",
+          "requestId"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": [
+              "code",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "Usage": {
+        "type": "object",
+        "properties": {
+          "used": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "remaining": {
+            "type": "integer"
+          },
+          "resetsAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Network": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "explorer": {
+            "type": "string"
+          },
+          "contract": {
+            "type": "string"
+          },
+          "testnet": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Claim": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "imageHash",
+          "issuerId",
+          "source",
+          "model",
+          "issuedAt",
+          "nonce"
+        ],
+        "properties": {
+          "imageHash": {
+            "$ref": "#/components/schemas/Hash"
+          },
+          "issuerId": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9._:/-]{1,120}$"
+          },
+          "source": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9._:/-]{1,120}$"
+          },
+          "model": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9._:/-]{1,120}$"
+          },
+          "nonce": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9._:/-]{1,120}$"
+          },
+          "issuedAt": {
+            "type": "integer",
+            "description": "Unix seconds; new registrations require a claim within the last 24 hours"
+          }
+        }
+      },
+      "Envelope": {
+        "type": "object",
+        "required": [
+          "version",
+          "kind",
+          "domain",
+          "claim",
+          "signature"
+        ],
+        "properties": {
+          "version": {
+            "type": "integer",
+            "enum": [
+              1
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "issuer_attestation"
+            ]
+          },
+          "domain": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "version",
+              "chainId",
+              "verifyingContract"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "enum": [
+                  "ZorAI Provenance"
+                ]
+              },
+              "version": {
+                "type": "string",
+                "enum": [
+                  "1"
+                ]
+              },
+              "chainId": {
+                "type": "integer"
+              },
+              "verifyingContract": {
+                "type": "string"
+              }
+            }
+          },
+          "claim": {
+            "$ref": "#/components/schemas/Claim"
+          },
+          "signature": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{130}$"
+          }
+        }
+      },
+      "Verification": {
+        "type": "object",
+        "required": [
+          "imageHash",
+          "status",
+          "isAiGenerated",
+          "network",
+          "found"
+        ],
+        "properties": {
+          "imageHash": {
+            "$ref": "#/components/schemas/Hash"
+          },
+          "found": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "attested",
+              "unknown",
+              "unvalidated_record",
+              "untrusted_attestation",
+              "mismatch"
+            ]
+          },
+          "isAiGenerated": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "True only for an approved matching attestation; null is inconclusive. Never false."
+          },
+          "aiOrigin": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "network": {
+            "$ref": "#/components/schemas/Network"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/Usage"
+          },
+          "issuer": {
+            "type": "object"
+          },
+          "source": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "registeredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "evidenceCid": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "signatureValid": {
+                "type": "boolean"
+              },
+              "assetBinding": {
+                "type": "string"
+              },
+              "envelope": {
+                "$ref": "#/components/schemas/Envelope"
+              }
+            }
+          },
+          "inspection": {
+            "type": "object",
+            "description": "Untrusted metadata observations for file requests only"
+          },
+          "limitations": {
+            "type": "string"
+          }
+        }
+      },
+      "Job": {
+        "type": "object",
+        "properties": {
+          "imageHash": {
+            "$ref": "#/components/schemas/Hash"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "submitted",
+              "confirmed",
+              "failed"
+            ]
+          },
+          "txHash": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidenceCid": {
+            "type": "string",
+            "nullable": true
+          },
+          "blockNumber": {
+            "type": "integer",
+            "nullable": true
+          },
+          "network": {
+            "$ref": "#/components/schemas/Network"
+          }
+        }
+      },
+      "Account": {
+        "type": "object",
+        "properties": {
+          "account": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "scopes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "expiresAt": {
+                "type": "string",
+                "nullable": true
+              }
+            }
+          },
+          "usage": {
+            "$ref": "#/components/schemas/Usage"
+          }
+        }
+      }
+    }
+  }
+}
