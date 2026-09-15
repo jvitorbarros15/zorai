@@ -1,172 +1,145 @@
-import { useState } from 'react';
-import Layout from '../components/layout/Layout';
-import { useWallet } from '../contexts/WalletContext';
+import { useState } from "react";
+import Link from "next/link";
+import Layout from "../components/layout/Layout";
+import VerificationResult from "../components/VerificationResult";
+import { request } from "../lib/browser-api";
 
-const BENEFITS = [
-  { label: 'Register Images', desc: 'Submit AI-generated images to the blockchain for permanent verification and proof of origin.' },
-  { label: 'Track History', desc: 'Access your complete history of registered images and all on-chain verification records.' },
-  { label: 'Verify Authenticity', desc: 'Verify the authenticity and provenance of any registered AI-generated image on-chain.' },
-  { label: 'Secure Storage', desc: 'Your image IDs are cryptographically stored — permanent, public, and tamper-proof.' },
-];
-
-export default function Connect() {
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [error, setError] = useState('');
-  const { connectWallet, isConnected, account, disconnectWallet } = useWallet();
-
-  const handleConnect = async () => {
-    setIsConnecting(true);
-    setError('');
+export default function Console() {
+  const [key, setKey] = useState(""),
+    [account, setAccount] = useState(null),
+    [digest, setDigest] = useState(""),
+    [result, setResult] = useState(null),
+    [error, setError] = useState(""),
+    [busy, setBusy] = useState(false);
+  async function run(event, verify) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    setResult(null);
     try {
-      await connectWallet();
+      const headers = {
+        Authorization: "Bearer " + key,
+        "Content-Type": "application/json",
+      };
+      if (verify) {
+        if (!/^[a-fA-F0-9]{64}$/.test(digest.trim()))
+          throw new Error("Enter a 64-character SHA-256 digest.");
+        const data = await request("/api/verify", {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ imageHash: digest.trim() }),
+        });
+        setResult(data);
+        setAccount((current) =>
+          current ? { ...current, usage: data.usage } : current,
+        );
+      } else setAccount(await request("/api/account", { headers }));
     } catch (err) {
-      console.error('Error connecting wallet:', err);
-      setError(err.message || 'Failed to connect wallet. Please try again.');
+      setError(err.message);
+      if (!verify) setAccount(null);
     } finally {
-      setIsConnecting(false);
+      setBusy(false);
     }
-  };
-
+  }
   return (
-    <Layout>
-      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 24px' }}>
-
-        {/* ── Header ── */}
-        <div style={{ padding: '64px 0 48px', borderBottom: '1px solid var(--border)' }}>
-          <p className="section-label" style={{ color: 'var(--accent)', marginBottom: '16px' }}>&nbsp;Wallet Auth</p>
-          <h1 style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: 'clamp(36px, 5vw, 60px)', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '0.03em', margin: 0, lineHeight: 0.95 }}>
-            CONNECT YOUR<br />
-            <span style={{ color: 'var(--accent)', textShadow: '0 0 32px var(--accent-glow)' }}>WALLET</span>
-          </h1>
-        </div>
-
-        <div style={{ padding: '48px 0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', alignItems: 'start' }}>
-
-          {/* ── Wallet card ── */}
-          <div>
-            <div style={{
-              border: '1px solid var(--border)',
-              borderLeft: `2px solid ${isConnected ? 'var(--risk-low)' : 'var(--accent)'}`,
-              backgroundColor: 'var(--bg-surface)',
-              padding: '36px',
-              boxShadow: isConnected ? '0 0 32px rgba(0, 200, 100, 0.08)' : '0 0 32px var(--accent-glow)',
-              transition: 'all 0.3s ease',
-            }}>
-              {/* MetaMask header */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '28px' }}>
-                <div style={{
-                  width: '56px',
-                  height: '56px',
-                  border: `1px solid ${isConnected ? 'var(--risk-low)' : 'var(--accent)'}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: 'var(--bg-elevated)',
-                  flexShrink: 0,
-                }}>
-                  <img src="/metamask-logo.svg" alt="MetaMask" style={{ width: '36px', height: '36px' }} />
-                </div>
-                <div>
-                  <h3 style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 4px', letterSpacing: '0.04em' }}>
-                    METAMASK
-                  </h3>
-                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>
-                    Browser Extension Wallet
-                  </span>
-                </div>
-              </div>
-
-              {/* Status indicator */}
-              <div style={{ marginBottom: '24px', padding: '12px 14px', backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span className={`status-dot ${isConnected ? 'online' : ''}`} style={{ background: isConnected ? 'var(--risk-low)' : 'var(--text-muted)' }} />
-                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: isConnected ? 'var(--risk-low)' : 'var(--text-muted)', letterSpacing: '0.1em' }}>
-                    {isConnected ? 'CONNECTED' : 'DISCONNECTED'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Error */}
-              {error && (
-                <div style={{ marginBottom: '20px', padding: '10px 14px', borderLeft: '2px solid var(--risk-high)', backgroundColor: 'var(--risk-high-dim)' }}>
-                  <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: 'var(--risk-high)', margin: 0 }}>
-                    ERR: {error}
-                  </p>
-                </div>
-              )}
-
-              {/* Connect button */}
-              {!isConnected ? (
+    <Layout title="API console">
+      <section className="hero compact">
+        <span className="eyebrow">Developer workspace</span>
+        <h1>API console</h1>
+        <p className="lead">
+          Check your account allowance and make a verification request.
+        </p>
+        <p>
+          Pilot access is provisioned by the operator. Self-service checkout is
+          not available yet.{" "}
+          <Link href="/docs">Read the integration guide.</Link>
+        </p>
+      </section>
+      <div className="grid">
+        <section className="panel">
+          <h2>Connect your account</h2>
+          <form onSubmit={(e) => run(e, false)}>
+            <fieldset disabled={busy}>
+              <label htmlFor="key">API key</label>
+              <input
+                id="key"
+                type="password"
+                value={key}
+                onChange={(e) => {
+                  setKey(e.target.value);
+                  setAccount(null);
+                  setResult(null);
+                }}
+                autoComplete="off"
+                spellCheck={false}
+                required
+              />
+              <p className="small muted">
+                Held in this page's memory only. Reload or clear to remove it.
+                Never put a secret API key in a public website.
+              </p>
+              <div className="actions">
+                <button type="submit">Check account</button>
                 <button
-                  onClick={handleConnect}
-                  disabled={isConnecting}
-                  className="btn-accent"
-                  style={{
-                    width: '100%',
-                    textAlign: 'center',
-                    opacity: isConnecting ? 0.6 : 1,
-                    cursor: isConnecting ? 'not-allowed' : 'pointer',
-                    padding: '12px',
-                    fontSize: '12px',
+                  type="button"
+                  className="secondary"
+                  onClick={() => {
+                    setKey("");
+                    setAccount(null);
+                    setResult(null);
+                    setError("");
                   }}
                 >
-                  {isConnecting ? '⟳ CONNECTING…' : '⬡ INITIALIZE CONNECTION'}
+                  Clear key
                 </button>
-              ) : (
-                <div>
-                  <div style={{ marginBottom: '20px' }}>
-                    <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '10px', letterSpacing: '0.15em', color: 'var(--text-muted)', margin: '0 0 8px', textTransform: 'uppercase' }}>
-                      Connected Account
-                    </p>
-                    <div className="data-block" style={{ wordBreak: 'break-all' }}>
-                      {account}
-                    </div>
-                  </div>
-                  <button
-                    onClick={disconnectWallet}
-                    style={{
-                      width: '100%',
-                      fontFamily: "'JetBrains Mono', monospace",
-                      fontSize: '11px',
-                      letterSpacing: '0.14em',
-                      textTransform: 'uppercase',
-                      color: 'var(--risk-high)',
-                      border: '1px solid var(--risk-high)',
-                      backgroundColor: 'transparent',
-                      padding: '10px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s',
-                    }}
-                  >
-                    ⏻ Disconnect
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* ── Benefits ── */}
-          <div>
-            <p className="section-label" style={{ color: 'var(--accent)', marginBottom: '20px' }}>&nbsp;Why Connect?</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              {BENEFITS.map((b, i) => (
-                <div
-                  key={b.label}
-                  className="tech-card"
-                  style={{ padding: '20px 22px', animationDelay: `${i * 0.06}s` }}
-                >
-                  <h3 style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '16px', fontWeight: 600, color: 'var(--accent)', letterSpacing: '0.06em', margin: '0 0 8px' }}>
-                    {b.label.toUpperCase()}
-                  </h3>
-                  <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.65', margin: 0, fontFamily: "'Outfit', sans-serif" }}>
-                    {b.desc}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-        </div>
+              </div>
+            </fieldset>
+          </form>
+          {account && (
+            <dl>
+              <dt>Account</dt>
+              <dd>{account.account.id}</dd>
+              <dt>Monthly usage</dt>
+              <dd>
+                {account.usage.used} / {account.usage.limit}
+              </dd>
+              <dt>Remaining</dt>
+              <dd>{account.usage.remaining}</dd>
+              <dt>Resets (UTC)</dt>
+              <dd>{account.usage.resetsAt}</dd>
+            </dl>
+          )}
+        </section>
+        <section className="panel">
+          <h2>Try a verification</h2>
+          <p>
+            A completed check, including an unknown result, uses one request
+            from your monthly allowance.
+          </p>
+          <form onSubmit={(e) => run(e, true)}>
+            <fieldset disabled={busy || !account}>
+              <label htmlFor="api-digest">Image SHA-256</label>
+              <input
+                id="api-digest"
+                value={digest}
+                onChange={(e) => setDigest(e.target.value)}
+                required
+                className="mono"
+                autoComplete="off"
+              />
+              <button type="submit">Verify with API key</button>
+            </fieldset>
+          </form>
+        </section>
+      </div>
+      <div aria-live="polite">
+        {busy && <p>Processing request…</p>}
+        {error && (
+          <p className="error" role="alert">
+            {error}
+          </p>
+        )}
+        <VerificationResult result={result} />
       </div>
     </Layout>
   );

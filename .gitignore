@@ -47,8 +47,13 @@ next-env.d.ts
 .idea
 .vscode
 
+# Local tool caches
+.npm-cache/
+
 # planning docs — never commit
-docs/superpowers/
+docs/
+/discovery/
+STATUS.md
 *Overview.md
 *-design.md
 *-plan.md

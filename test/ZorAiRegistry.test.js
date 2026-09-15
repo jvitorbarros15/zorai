@@ -67,8 +67,8 @@ describe("ZorAiRegistry access control", function () {
   });
 
   it("lets an authorized issuer update verification", async function () {
-    await register(owner);
     await registry.addIssuer(issuer.address);
+    await register(issuer);
     await expect(
       registry.connect(issuer).updateVerification(sample.imageId, true, 0, [])
     ).to.not.be.reverted;
@@ -89,5 +89,31 @@ describe("ZorAiRegistry access control", function () {
 
   it("blocks removing the owner from issuers", async function () {
     await expect(registry.removeIssuer(owner.address)).to.be.revertedWith("Cannot remove owner");
+  });
+  it("prevents one issuer from changing another issuer's record", async function () {
+    await register(owner);
+    await registry.addIssuer(issuer.address);
+    await expect(registry.connect(issuer).updateVerification(sample.imageId, true, 0, [])).to.be.revertedWith("Not record issuer or owner");
+  });
+  it("updates the current high risk collection after downgrade and re-upgrade", async function () {
+    await register(owner, 'first'); await register(owner, 'second');
+    await registry.updateVerification('first', true, 2, []);
+    await registry.updateVerification('second', true, 2, []);
+    await registry.updateVerification('first', true, 0, []);
+    expect(await registry.getHighRiskImages()).to.deep.equal(['second']);
+    await registry.updateVerification('second', true, 0, []);
+    expect(await registry.getTotalHighRiskImages()).to.equal(0);
+    await registry.updateVerification('first', true, 2, []);
+    expect(await registry.getHighRiskImages()).to.deep.equal(['first']);
+  });
+  it("requires the new owner to accept and revokes the old owner's issuer access", async function () {
+    await registry.transferOwnership(issuer.address);
+    expect(await registry.owner()).to.equal(owner.address);
+    await expect(registry.connect(outsider).acceptOwnership()).to.be.revertedWith('Not pending owner');
+    await registry.connect(issuer).acceptOwnership();
+    expect(await registry.owner()).to.equal(issuer.address);
+    expect(await registry.authorizedIssuers(owner.address)).to.equal(false);
+    await expect(registry.addIssuer(outsider.address)).to.be.revertedWith('Not owner');
+    await register(issuer);
   });
 });
