@@ -13,3 +13,10 @@ test('JPEG XMP marker round trip preserves the original segment bytes', () => {
 test('truncated JPEG cannot be prepared or inspected', () => {
   expect(() => inspectAsset(original.subarray(0, -2))).toThrow(/Incomplete/);
 });
+test('real JPEG can be inspected multiple times without error', () => {
+  const info1 = inspectAsset(original);
+  expect(info1.format).toBe('jpeg');
+  const info2 = inspectAsset(original);
+  expect(info2.format).toBe('jpeg');
+  expect(info1.imageHash).toBe(info2.imageHash);
+});
