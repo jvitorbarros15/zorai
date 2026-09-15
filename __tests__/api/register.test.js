@@ -56,7 +56,10 @@ beforeEach(async () => {
     chainId: 31337,
     registryAddress: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS,
   });
-  registerEvidence.mockResolvedValue({ job: { status: "submitted", txHash: "0xreal" }, created: true });
+  registerEvidence.mockResolvedValue({
+    job: { status: "submitted", txHash: "0xreal" },
+    created: true,
+  });
 });
 function body() {
   return {
@@ -98,11 +101,24 @@ test("pending transaction is not reported as confirmed", async () => {
   expect(res._getJSONData().status).toBe("submitted");
 });
 test("confirmed receipt returns 200", async () => {
-  registerEvidence.mockResolvedValue({ job: { status: "confirmed" }, created: false });
+  registerEvidence.mockResolvedValue({
+    job: { status: "confirmed" },
+    created: false,
+  });
   expect((await call(body())).statusCode).toBe(200);
 });
 test("failed transaction returns conflict", async () => {
-  registerEvidence.mockResolvedValue({ job: { status: "failed" }, created: false });
+  registerEvidence.mockResolvedValue({
+    job: { status: "failed" },
+    created: false,
+  });
+  expect((await call(body())).statusCode).toBe(409);
+});
+test("dropped transaction returns conflict", async () => {
+  registerEvidence.mockResolvedValue({
+    job: { status: "dropped" },
+    created: false,
+  });
   expect((await call(body())).statusCode).toBe(409);
 });
 test("refund called when registerEvidence rejects", async () => {
@@ -114,12 +130,18 @@ test("refund called when registerEvidence rejects", async () => {
   expect(refund).toHaveBeenCalled();
 });
 test("refund called when created is false", async () => {
-  registerEvidence.mockResolvedValue({ job: { status: "submitted" }, created: false });
+  registerEvidence.mockResolvedValue({
+    job: { status: "submitted" },
+    created: false,
+  });
   await call(body());
   expect(refund).toHaveBeenCalled();
 });
 test("refund not called when created is true", async () => {
-  registerEvidence.mockResolvedValue({ job: { status: "submitted" }, created: true });
+  registerEvidence.mockResolvedValue({
+    job: { status: "submitted" },
+    created: true,
+  });
   await call(body());
   expect(refund).not.toHaveBeenCalled();
 });

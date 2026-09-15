@@ -1139,7 +1139,8 @@
             "enum": [
               "submitted",
               "confirmed",
-              "failed"
+              "failed",
+              "dropped"
             ]
           },
           "txHash": {

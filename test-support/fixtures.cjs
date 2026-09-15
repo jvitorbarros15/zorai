@@ -66,6 +66,9 @@ function memoryStore() {
     clear() {
       values.clear();
     },
+    keys() {
+      return Array.from(values.keys());
+    },
   };
   return store;
 }

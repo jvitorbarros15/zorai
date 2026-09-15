@@ -7,7 +7,11 @@ jest.mock("../lib/store", () => ({
   namespace: () => "ns:",
 }));
 const { registerEvidence, requestDigest } = require("../lib/registration");
-const { getWriteContract, getReadProvider, readRecord } = require("../lib/zoraiRegistry");
+const {
+  getWriteContract,
+  getReadProvider,
+  readRecord,
+} = require("../lib/zoraiRegistry");
 const { pinEvidence } = require("../lib/ipfs");
 let store;
 beforeEach(() => {
@@ -37,18 +41,40 @@ function createSignedTx() {
 test("new registration creates transaction with txHashes array and lastBroadcastAt", async () => {
   const imageHash = "1".repeat(64);
   const issuer = ethers.Wallet.createRandom();
-  const claim = { imageHash, issuerId: "studio", source: "test", model: "test", issuedAt: new Date().toISOString(), nonce: "n1" };
-  const signature = await issuer.signMessage(ethers.toUtf8Bytes(JSON.stringify(claim)));
+  const claim = {
+    imageHash,
+    issuerId: "studio",
+    source: "test",
+    model: "test",
+    issuedAt: new Date().toISOString(),
+    nonce: "n1",
+  };
+  const signature = await issuer.signMessage(
+    ethers.toUtf8Bytes(JSON.stringify(claim)),
+  );
   const envelope = { version: 1, kind: "eip712", claim, signature };
   const { wallet, sign } = createSignedTx();
   const rawTx = await sign();
   const txHash = ethers.keccak256(rawTx);
   getWriteContract.mockReturnValue({
-    runner: { address: wallet.address, populateTransaction: jest.fn().mockResolvedValue({ to: wallet.address, data: "0x" }), signTransaction: jest.fn().mockResolvedValue(rawTx) },
+    runner: {
+      address: wallet.address,
+      populateTransaction: jest
+        .fn()
+        .mockResolvedValue({ to: wallet.address, data: "0x" }),
+      signTransaction: jest.fn().mockResolvedValue(rawTx),
+    },
     authorizedIssuers: jest.fn().mockResolvedValue(true),
-    registerImage: { populateTransaction: jest.fn().mockResolvedValue({ to: wallet.address, data: "0x" }) },
+    registerImage: {
+      populateTransaction: jest
+        .fn()
+        .mockResolvedValue({ to: wallet.address, data: "0x" }),
+    },
   });
-  getReadProvider.mockReturnValue({ broadcastTransaction: jest.fn(), getTransactionReceipt: jest.fn().mockResolvedValue(null) });
+  getReadProvider.mockReturnValue({
+    broadcastTransaction: jest.fn(),
+    getTransactionReceipt: jest.fn().mockResolvedValue(null),
+  });
   const client = { id: "client1" };
   const result = await registerEvidence(envelope, client);
   expect(result.created).toBe(true);
@@ -60,8 +86,17 @@ test("new registration creates transaction with txHashes array and lastBroadcast
 test("idempotent retry with same fingerprint returns created false", async () => {
   const imageHash = "2".repeat(64);
   const issuer = ethers.Wallet.createRandom();
-  const claim = { imageHash, issuerId: "studio", source: "test", model: "test", issuedAt: new Date().toISOString(), nonce: "n1" };
-  const signature = await issuer.signMessage(ethers.toUtf8Bytes(JSON.stringify(claim)));
+  const claim = {
+    imageHash,
+    issuerId: "studio",
+    source: "test",
+    model: "test",
+    issuedAt: new Date().toISOString(),
+    nonce: "n1",
+  };
+  const signature = await issuer.signMessage(
+    ethers.toUtf8Bytes(JSON.stringify(claim)),
+  );
   const envelope = { version: 1, kind: "eip712", claim, signature };
   const fingerprint = requestDigest(envelope);
   const { wallet, sign } = createSignedTx();
@@ -82,7 +117,12 @@ test("idempotent retry with same fingerprint returns created false", async () =>
   };
   await store.set("ns:registration:" + imageHash, stored);
   getWriteContract.mockReturnValue({ runner: wallet });
-  getReadProvider.mockReturnValue({ broadcastTransaction: jest.fn(), getTransactionReceipt: jest.fn().mockResolvedValue({ status: 1, blockNumber: 100 }) });
+  getReadProvider.mockReturnValue({
+    broadcastTransaction: jest.fn(),
+    getTransactionReceipt: jest
+      .fn()
+      .mockResolvedValue({ status: 1, blockNumber: 100 }),
+  });
   const client = { id: "client1" };
   const result = await registerEvidence(envelope, client);
   expect(result.created).toBe(false);
@@ -91,8 +131,17 @@ test("idempotent retry with same fingerprint returns created false", async () =>
 test("failed job with same fingerprint is returned without retry", async () => {
   const imageHash = "3".repeat(64);
   const issuer = ethers.Wallet.createRandom();
-  const claim = { imageHash, issuerId: "studio", source: "test", model: "test", issuedAt: new Date().toISOString(), nonce: "n1" };
-  const signature = await issuer.signMessage(ethers.toUtf8Bytes(JSON.stringify(claim)));
+  const claim = {
+    imageHash,
+    issuerId: "studio",
+    source: "test",
+    model: "test",
+    issuedAt: new Date().toISOString(),
+    nonce: "n1",
+  };
+  const signature = await issuer.signMessage(
+    ethers.toUtf8Bytes(JSON.stringify(claim)),
+  );
   const envelope = { version: 1, kind: "eip712", claim, signature };
   const fingerprint = requestDigest(envelope);
   const failed = {
@@ -115,8 +164,17 @@ test("failed job with same fingerprint is returned without retry", async () => {
 test("confirmed status does not call getTransactionReceipt", async () => {
   const imageHash = "4".repeat(64);
   const issuer = ethers.Wallet.createRandom();
-  const claim = { imageHash, issuerId: "studio", source: "test", model: "test", issuedAt: new Date().toISOString(), nonce: "n1" };
-  const signature = await issuer.signMessage(ethers.toUtf8Bytes(JSON.stringify(claim)));
+  const claim = {
+    imageHash,
+    issuerId: "studio",
+    source: "test",
+    model: "test",
+    issuedAt: new Date().toISOString(),
+    nonce: "n1",
+  };
+  const signature = await issuer.signMessage(
+    ethers.toUtf8Bytes(JSON.stringify(claim)),
+  );
   const envelope = { version: 1, kind: "eip712", claim, signature };
   const fingerprint = requestDigest(envelope);
   const confirmed = {
@@ -132,9 +190,83 @@ test("confirmed status does not call getTransactionReceipt", async () => {
   };
   await store.set("ns:registration:" + imageHash, confirmed);
   const mockReceipt = jest.fn();
-  getReadProvider.mockReturnValue({ getTransactionReceipt: mockReceipt, broadcastTransaction: jest.fn() });
+  getReadProvider.mockReturnValue({
+    getTransactionReceipt: mockReceipt,
+    broadcastTransaction: jest.fn(),
+  });
   const client = { id: "client1" };
   const result = await registerEvidence(envelope, client);
   expect(mockReceipt).not.toHaveBeenCalled();
   expect(result.job.status).toBe("confirmed");
+});
+test("pending job younger than STUCK throws publisher_pending and broadcasts", async () => {
+  process.env.ZORAI_STUCK_TX_SECONDS = "600";
+  const imageHash = "5".repeat(64);
+  const issuer = ethers.Wallet.createRandom();
+  const claim = {
+    imageHash,
+    issuerId: "studio",
+    source: "test",
+    model: "test",
+    issuedAt: new Date().toISOString(),
+    nonce: "n1",
+  };
+  const signature = await issuer.signMessage(
+    ethers.toUtf8Bytes(JSON.stringify(claim)),
+  );
+  const envelope = { version: 1, kind: "eip712", claim, signature };
+  const { wallet, sign } = createSignedTx();
+  const rawTx = await sign();
+  const txHash = ethers.keccak256(rawTx);
+  const pending = {
+    imageHash,
+    clientId: "client1",
+    fingerprint: requestDigest(envelope),
+    status: "submitted",
+    txHash,
+    txHashes: [txHash],
+    rawTransaction: rawTx,
+    lastBroadcastAt: new Date().toISOString(),
+    evidenceCid: "Qm1",
+    envelope,
+    createdAt: new Date().toISOString(),
+  };
+  await store.set("ns:registration:" + imageHash, pending);
+  await store.set("ns:signer-pending", imageHash);
+  const mockBroadcast = jest.fn();
+  const mockSignTx = jest.fn();
+  getReadProvider.mockReturnValue({
+    broadcastTransaction: mockBroadcast,
+    getTransactionReceipt: jest.fn().mockResolvedValue(null),
+  });
+  const mockWallet = { signTransaction: mockSignTx };
+  getWriteContract.mockReturnValue({ runner: mockWallet });
+  const otherImageHash = "6".repeat(64);
+  const otherClaim = {
+    imageHash: otherImageHash,
+    issuerId: "studio",
+    source: "test",
+    model: "test",
+    issuedAt: new Date().toISOString(),
+    nonce: "n2",
+  };
+  const otherSignature = await issuer.signMessage(
+    ethers.toUtf8Bytes(JSON.stringify(otherClaim)),
+  );
+  const otherEnvelope = {
+    version: 1,
+    kind: "eip712",
+    claim: otherClaim,
+    signature: otherSignature,
+  };
+  let error;
+  try {
+    await registerEvidence(otherEnvelope, { id: "client1" });
+  } catch (e) {
+    error = e;
+  }
+  expect(error).toBeDefined();
+  expect(error.code).toBe("publisher_pending");
+  expect(mockSignTx).not.toHaveBeenCalled();
+  expect(mockBroadcast).toHaveBeenCalled();
 });

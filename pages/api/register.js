@@ -55,7 +55,11 @@ export default route(["POST"], async (req, res) => {
   const job = result.job;
   res
     .status(
-      job.status === "failed" ? 409 : job.status === "confirmed" ? 200 : 202,
+      ["failed", "dropped"].includes(job.status)
+        ? 409
+        : job.status === "confirmed"
+          ? 200
+          : 202,
     )
     .json(job);
 });
