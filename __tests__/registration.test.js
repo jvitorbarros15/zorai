@@ -6,7 +6,11 @@ jest.mock("../lib/store", () => ({
   getStore: () => store,
   namespace: () => "ns:",
 }));
-const { registerEvidence, requestDigest } = require("../lib/registration");
+const {
+  registerEvidence,
+  registrationStatus,
+  requestDigest,
+} = require("../lib/registration");
 const {
   getWriteContract,
   getReadProvider,
@@ -269,4 +273,207 @@ test("pending job younger than STUCK throws publisher_pending and broadcasts", a
   expect(error.code).toBe("publisher_pending");
   expect(mockSignTx).not.toHaveBeenCalled();
   expect(mockBroadcast).toHaveBeenCalled();
+});
+function envelopeFor(imageHash, issuedAt = 1) {
+  return {
+    version: 1,
+    kind: "issuer_attestation",
+    claim: {
+      imageHash,
+      issuerId: "studio",
+      source: "test",
+      model: "m",
+      issuedAt,
+      nonce: "n1",
+    },
+    signature: "0x" + "a".repeat(130),
+  };
+}
+async function seedPending(
+  imageHash,
+  { ageSeconds = 3600, extraHashes = [] } = {},
+) {
+  const wallet = ethers.Wallet.createRandom();
+  const raw = await wallet.signTransaction({
+    to: wallet.address,
+    data: "0x",
+    nonce: 5,
+    gasLimit: 100000n,
+    chainId: 31337,
+    type: 2,
+    maxFeePerGas: 10n,
+    maxPriorityFeePerGas: 4n,
+  });
+  const txHash = ethers.keccak256(raw);
+  const envelope = envelopeFor(imageHash);
+  await store.set("ns:registration:" + imageHash, {
+    imageHash,
+    clientId: "client1",
+    fingerprint: requestDigest(envelope),
+    status: "submitted",
+    evidenceCid: "Qm1",
+    envelope,
+    rawTransaction: raw,
+    txHash,
+    txHashes: [txHash, ...extraHashes],
+    lastBroadcastAt: new Date(Date.now() - ageSeconds * 1000).toISOString(),
+  });
+  await store.set("ns:signer-pending", imageHash);
+  return { wallet, txHash, envelope };
+}
+function fakeProvider(overrides = {}) {
+  return {
+    broadcastTransaction: jest.fn(),
+    getTransactionReceipt: jest.fn().mockResolvedValue(null),
+    getTransactionCount: jest.fn().mockResolvedValue(5),
+    getFeeData: jest
+      .fn()
+      .mockResolvedValue({ maxFeePerGas: 1n, maxPriorityFeePerGas: 1n }),
+    ...overrides,
+  };
+}
+function fakeContract(wallet, signTransaction) {
+  return {
+    runner: {
+      address: wallet.address,
+      populateTransaction: jest.fn().mockResolvedValue({}),
+      signTransaction: jest.fn(
+        signTransaction || ((tx) => wallet.signTransaction(tx)),
+      ),
+    },
+    authorizedIssuers: jest.fn().mockResolvedValue(true),
+    registerImage: { populateTransaction: jest.fn().mockResolvedValue({}) },
+  };
+}
+async function nextRaw(wallet) {
+  return wallet.signTransaction({
+    to: wallet.address,
+    data: "0x",
+    nonce: 6,
+    gasLimit: 100000n,
+    chainId: 31337,
+    type: 2,
+    maxFeePerGas: 10n,
+    maxPriorityFeePerGas: 1n,
+  });
+}
+test("stuck transaction with unused nonce is replaced with bumped fees", async () => {
+  const imageHash = "7".repeat(64);
+  const { wallet, txHash, envelope } = await seedPending(imageHash);
+  const provider = fakeProvider();
+  getReadProvider.mockReturnValue(provider);
+  getWriteContract.mockReturnValue(fakeContract(wallet));
+  const result = await registerEvidence(envelope, { id: "client1" });
+  const stored = await store.get("ns:registration:" + imageHash);
+  const replacement = ethers.Transaction.from(stored.rawTransaction);
+  expect(result.created).toBe(false);
+  expect(stored.txHashes).toEqual([txHash, stored.txHash]);
+  expect(stored.txHash).not.toBe(txHash);
+  expect(replacement.nonce).toBe(5);
+  expect(replacement.maxFeePerGas).toBe(12n);
+  expect(replacement.maxPriorityFeePerGas).toBe(5n);
+  expect(provider.broadcastTransaction).toHaveBeenCalledWith(
+    stored.rawTransaction,
+  );
+});
+test("receipt for a replacement hash confirms the job and clears pending", async () => {
+  const imageHash = "8".repeat(64);
+  const replacementHash = "0x" + "b".repeat(64);
+  await seedPending(imageHash, { extraHashes: [replacementHash] });
+  getReadProvider.mockReturnValue(
+    fakeProvider({
+      getTransactionReceipt: jest.fn(async (hash) =>
+        hash === replacementHash ? { status: 1, blockNumber: 9 } : null,
+      ),
+    }),
+  );
+  const job = await registrationStatus(imageHash, { id: "client1" });
+  expect(job.status).toBe("confirmed");
+  expect(job.txHash).toBe(replacementHash);
+  expect(await store.get("ns:signer-pending")).toBeNull();
+});
+test("consumed nonce without receipt drops the job and releases the queue", async () => {
+  const stuckHash = "9".repeat(64);
+  const nextHash = "a".repeat(64);
+  const { wallet } = await seedPending(stuckHash);
+  const raw = await nextRaw(wallet);
+  getReadProvider.mockReturnValue(
+    fakeProvider({ getTransactionCount: jest.fn().mockResolvedValue(6) }),
+  );
+  getWriteContract.mockReturnValue(fakeContract(wallet, async () => raw));
+  const result = await registerEvidence(envelopeFor(nextHash), {
+    id: "client1",
+  });
+  expect(result.created).toBe(true);
+  expect((await store.get("ns:registration:" + stuckHash)).status).toBe(
+    "dropped",
+  );
+  expect(await store.get("ns:signer-pending")).toBe(nextHash);
+});
+test("consumed nonce with an on-chain record confirms the stuck job", async () => {
+  const stuckHash = "b".repeat(64);
+  const nextHash = "c".repeat(64);
+  const { wallet } = await seedPending(stuckHash);
+  const raw = await nextRaw(wallet);
+  readRecord.mockImplementation(async (hash) =>
+    hash === stuckHash ? { imageHash: hash } : null,
+  );
+  getReadProvider.mockReturnValue(
+    fakeProvider({ getTransactionCount: jest.fn().mockResolvedValue(6) }),
+  );
+  getWriteContract.mockReturnValue(fakeContract(wallet, async () => raw));
+  const result = await registerEvidence(envelopeFor(nextHash), {
+    id: "client1",
+  });
+  expect(result.created).toBe(true);
+  expect((await store.get("ns:registration:" + stuckHash)).status).toBe(
+    "confirmed",
+  );
+});
+test("failed job with a newly signed claim is archived and retried", async () => {
+  const imageHash = "d".repeat(64);
+  const old = envelopeFor(imageHash, 1);
+  await store.set("ns:registration:" + imageHash, {
+    imageHash,
+    clientId: "client1",
+    fingerprint: requestDigest(old),
+    status: "failed",
+    txHashes: ["0x" + "f".repeat(64)],
+  });
+  const wallet = ethers.Wallet.createRandom();
+  const raw = await nextRaw(wallet);
+  getReadProvider.mockReturnValue(fakeProvider());
+  getWriteContract.mockReturnValue(fakeContract(wallet, async () => raw));
+  const result = await registerEvidence(envelopeFor(imageHash, 2), {
+    id: "client1",
+  });
+  expect(result.created).toBe(true);
+  expect(
+    store
+      .keys()
+      .some((key) =>
+        key.startsWith("ns:registration-archive:" + imageHash + ":"),
+      ),
+  ).toBe(true);
+  expect((await store.get("ns:registration:" + imageHash)).status).toBe(
+    "submitted",
+  );
+});
+test("lost signer lock before signing rejects without saving a job", async () => {
+  const imageHash = "e".repeat(64);
+  const wallet = ethers.Wallet.createRandom();
+  const contract = fakeContract(wallet);
+  getReadProvider.mockReturnValue(fakeProvider());
+  getWriteContract.mockReturnValue(contract);
+  pinEvidence.mockImplementation(async () => {
+    await store.set("ns:signer-lock", "another-request");
+    return "Qm1";
+  });
+  await expect(
+    registerEvidence(envelopeFor(imageHash), { id: "client1" }),
+  ).rejects.toMatchObject({
+    code: "publisher_busy",
+  });
+  expect(contract.runner.signTransaction).not.toHaveBeenCalled();
+  expect(await store.get("ns:registration:" + imageHash)).toBeNull();
 });
